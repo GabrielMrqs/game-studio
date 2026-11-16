@@ -1,0 +1,13 @@
+{
+  "name": "game-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "cezar": "cezar",
+    "inbox": "node studio/inbox.mjs"
+  },
+  "dependencies": {
+    "@open-mercato/cezar": "0.20.0"
+  }
+}
