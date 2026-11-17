@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="640" viewBox="0 0 960 640">
+ <rect width="960" height="640" fill="#152d3a"/>
+ <path d="M0 440 Q220 385 480 440 T960 430 V640 H0Z" fill="#466e6c"/>
+ <path d="M100 410 V200 Q480 -30 860 200 V410Z" fill="#a68969" stroke="#e8c997" stroke-width="12"/>
+ <path d="M180 400 V230 Q480 70 780 230 V400Z" fill="#354958"/>
+ <circle cx="480" cy="210" r="95" fill="#254756" stroke="#d8bb80" stroke-width="12"/>
+ <path d="M480 124 V296 M395 210 H565" stroke="#d8bb80" stroke-width="8"/>
+ <circle cx="480" cy="210" r="28" fill="#f0cf82"/>
+ <path d="M80 485 H880" stroke="#d8bb80" stroke-width="8"/>
+ <text x="480" y="560" text-anchor="middle" fill="#f7ebd3" font-family="sans-serif" font-size="24">OBSERVATORY • illustrated placeholder</text>
+</svg>

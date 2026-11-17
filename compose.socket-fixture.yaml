@@ -1,0 +1,92 @@
+services:
+  fixture-upstream:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway-fixture
+    command: ["node", "/fixture/studio/fixtures/model-upstream.mjs"]
+    secrets: [fixture_key]
+    networks: [upstream_internal]
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=64m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway-fixture
+    command: ["node", "/fixture/studio/fixtures/gateway-server.mjs"]
+    environment:
+      FIXTURE_SOCKET: /socket/gateway.sock
+      FIXTURE_STATE: /quota/quota.sqlite
+    secrets: [fixture_key]
+    volumes:
+      - socket:/socket
+      - quota:/quota
+    networks: [upstream_internal]
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=64m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+  cezar:
+    build:
+      context: .
+      dockerfile: Dockerfile.cezar-fixture
+      args:
+        FIXTURE_CONFIG: opencode-socket-fixture.json
+    network_mode: none
+    depends_on: [gateway, fixture-upstream]
+    command: ["sh", "-c", "socat TCP-LISTEN:18080,bind=127.0.0.1,reuseaddr,fork UNIX-CONNECT:/socket/gateway.sock & exec ./node_modules/.bin/cezar --no-open --bind-host 127.0.0.1 --port 14321"]
+    environment:
+      CEZ_TERMINAL: "0"
+      CEZ_DISPATCH: "0"
+      CEZ_MANAGERS: "0"
+      CEZ_AUTOMATIONS: "0"
+      CEZ_RELAY: "0"
+    volumes:
+      - fixture_project:/project
+      - fixture_handoff:/handoff
+      - socket:/socket
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=512m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "node", "studio/fixtures/socket-health.mjs"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+  tracker-ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile.cezar-fixture
+      args:
+        FIXTURE_CONFIG: opencode-socket-fixture.json
+    command: ["node", "studio/fixtures/tracker-ingest.mjs"]
+    networks: [upstream_internal]
+    volumes:
+      - fixture_project:/project
+      - fixture_handoff:/handoff
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=256m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+networks:
+  upstream_internal:
+    internal: true
+secrets:
+  fixture_key:
+    file: ./studio/fixtures/fixture-key.txt
+volumes:
+  fixture_project:
+  fixture_handoff:
+  socket:
+  quota:

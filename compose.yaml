@@ -1,0 +1,66 @@
+services:
+  cezar:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    command: ["sh", "-c", "node studio/startup-guard.mjs && exec ./node_modules/.bin/cezar --no-open --bind-host 127.0.0.1 --port 14321"]
+    volumes:
+      - project:/project
+      - cezar-home:/home/node/.cezar
+    environment:
+      CEZ_DRY_RUN: "1"
+      CEZ_TERMINAL: "0"
+      CEZ_DISPATCH: "0"
+      CEZ_MANAGERS: "0"
+      CEZ_AUTOMATIONS: "0"
+      CEZ_RELAY: "0"
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=256m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:14321/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+  inbox:
+    build: .
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      cezar:
+        condition: service_healthy
+        restart: true
+    command: ["node", "studio/inbox.mjs"]
+    environment:
+      CEZ_API_URL: http://127.0.0.1:14321
+      STUDIO_STATE: /data
+      STUDIO_INBOX: /ideas
+      STUDIO_WORKFLOW: studio-plan
+      STUDIO_HEALTH_FILE: /data/inbox.heartbeat
+    volumes:
+      - project:/project
+      - state:/data
+      - ideas:/ideas
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,size=64m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    healthcheck:
+      test: ["CMD", "node", "-e", "try { process.exit(Date.now()-require('fs').statSync('/data/inbox.heartbeat').mtimeMs < 90000 ? 0 : 1) } catch { process.exit(1) }"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+volumes:
+  project:
+  state:
+  ideas:
+  cezar-home:

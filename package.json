@@ -1,0 +1,17 @@
+{
+  "name": "game-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "cezar": "cezar",
+    "inbox": "node studio/inbox.mjs",
+    "linear": "node studio/linear.mjs",
+    "watchdog": "node studio/watchdog.mjs",
+    "status": "node studio/status.mjs",
+    "inspect-recovery": "node studio/inspect-recovery.mjs"
+  },
+  "dependencies": {
+    "@open-mercato/cezar": "0.20.0"
+  }
+}
