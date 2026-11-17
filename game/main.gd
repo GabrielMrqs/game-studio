@@ -7,6 +7,7 @@ var lit := false
 var save_path := "user://quiet_observatory_save.json"
 var message: Label
 var title: Label
+var room_label: Label
 var inventory: Button
 var hotspots: HBoxContainer
 var choices: HBoxContainer
@@ -28,6 +29,9 @@ func _ready() -> void:
 	panel.add_child(layout)
 	title = Label.new()
 	layout.add_child(title)
+	room_label = Label.new()
+	room_label.add_theme_font_size_override("font_size", 12)
+	layout.add_child(room_label)
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	message.custom_minimum_size.y = 52
@@ -62,6 +66,7 @@ func _show_room(text: String) -> void:
 	_clear(hotspots)
 	_clear(choices)
 	title.text = "The Quiet Observatory — " + ("Observatory" if room == "observatory" else "Lantern room")
+	room_label.text = "Observatory" if room == "observatory" else "Lantern room"
 	message.text = text
 	inventory.text = "Inventory: lens" + (" (selected)" if selected_lens else "") if has_lens else "Inventory: empty"
 	if room == "observatory":
