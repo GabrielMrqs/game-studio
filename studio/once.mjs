@@ -110,7 +110,7 @@ async function processIdea(config, linear) {
     if (!watch) console.log(`No new ideas in ideas/${linear ? ' or Linear' : ''}; previously claimed ideas will not run again.`);
     return false;
   }
-  if (!watch && files.length !== 1) throw new Error('Leave exactly one unclaimed Markdown idea in ideas/.');
+  if (!watch && files.length > 1) throw new Error('Leave exactly one unclaimed Markdown idea in ideas/.');
   const { name, idea, receipt, id, title } = task;
   if (!idea || Buffer.byteLength(idea) > 16_384) {
     throw new Error('The idea must contain between 1 and 16384 bytes.');
