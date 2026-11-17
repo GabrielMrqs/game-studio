@@ -30,6 +30,7 @@ test('Cezar feature graph gates commits and publication on planner and review de
   await writeFile(join(root, 'check.cjs'), "const fs = require('fs'); if (!['works','approved'].includes(fs.readFileSync('feature.txt','utf8'))) process.exit(1);\n");
   execFileSync('npm', ['install', '--package-lock-only', '--ignore-scripts', '--no-audit', '--no-fund'], { cwd: root, stdio: 'ignore' });
   for (const args of [['init', '-b', 'main'], ['config', 'user.name', 'Test'], ['config', 'user.email', 'test@example.invalid'], ['add', '.'], ['commit', '-m', 'fixture']]) execFileSync('git', args, { cwd: root, stdio: 'ignore' });
+  const baseSha = execFileSync('git', ['rev-parse', 'main'], { cwd: root, encoding: 'utf8' }).trim();
   const bare = join(root, 'remote.git');
   execFileSync('git', ['init', '--bare', bare], { cwd: root, stdio: 'ignore' });
   execFileSync('git', ['push', bare, 'main:main'], { cwd: root, stdio: 'ignore' });
@@ -171,6 +172,9 @@ test('Cezar feature graph gates commits and publication on planner and review de
     assert.ok(!blocked.graphState.taken.includes('review.approve->commit'));
     const log = execFileSync('git', ['log', '--format=%s', 'main..HEAD'], { cwd: blocked.worktreePath, encoding: 'utf8' }).trim();
     assert.ok(log && log.split('\n').every((subject) => ['cezar autosave (run finalize)', 'cezar autosave (turn end)'].includes(subject)), `unexpected worktree commits: ${log}`);
+    assert.match(blocked.branch, /^cez\//);
+    assert.equal(execFileSync('git', ['rev-parse', 'main'], { cwd: root, encoding: 'utf8' }).trim(), baseSha, 'failed run changed main');
+    assert.notEqual(execFileSync('git', ['rev-parse', 'HEAD'], { cwd: blocked.worktreePath, encoding: 'utf8' }).trim(), baseSha);
     await assert.rejects(publishRun({ id: runId, url, state: join(root, 'state'), repoRoot: root, repo: 'acme/game', githubToken: 'fixture', linearKey: 'fixture', publisher }), /has not passed Godot checks/);
     const blockedSha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: blocked.worktreePath, encoding: 'utf8' }).trim();
     const blockedEvidence = { runId, commit: blockedSha, verdict: 'approve' };
@@ -181,7 +185,7 @@ test('Cezar feature graph gates commits and publication on planner and review de
     const remoteBranch = spawnSync('git', ['--git-dir', bare, 'show-ref', '--verify', '--quiet', `refs/heads/${blocked.branch}`]);
     assert.equal(remoteBranch.status, 1, 'failed feature branch was promoted to the disposable remote');
     assert.equal(calls.length, 3, 'blocked run invoked the mock publisher');
-    console.log(`PASS ${idea}: ${expectedEdge}; no feature-commit node or publication; CEZ_AUTOSAVE=0 still yielded: ${[...new Set(log.split('\n'))].join(', ')}`);
+    console.log(`PASS ${idea}: ${expectedEdge}; autosaves isolated on ${blocked.branch}, main unchanged; no feature-commit node or publication: ${[...new Set(log.split('\n'))].join(', ')}`);
   }
   assert.equal(execFileSync('git', ['rev-parse', 'main'], { cwd: root, encoding: 'utf8' }).trim(), execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim());
 });

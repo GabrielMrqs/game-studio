@@ -11,6 +11,103 @@ Linear ingestion is experimental and has not been tested against a live workspac
 An isolated **mock-only** Docker Compose preview is documented in
 [`OPERATIONS.md`](OPERATIONS.md). It is not a safe real-agent deployment.
 
+## Turn one idea into a local gameplay commit
+
+Place one new `.md` file in `ideas/`. Save local settings once in the ignored
+`.studio-state/once.json`. These are the defaults (use absolute paths or paths
+relative to the repository; replace `/home/you` with your home path):
+
+```json
+{
+  "opencodeHome": "/home/you/.local/share/game-studio/opencode",
+  "godot": "/usr/bin/godot",
+  "workspaceDir": ".studio-state",
+  "logsDir": ".studio-state"
+}
+```
+
+Create `studio/develop` locally from a validated game commit if it does not
+already exist. Keep it unchecked out; use a detached worktree to play it.
+Use a dedicated, private OpenCode profile already signed in. Never point it at
+your normal home or copy that home's credential database. Requires Linux,
+Bubblewrap, GNU `timeout`, `flock`,
+OpenCode 2.3 at `/usr/bin/opencode`, and Godot 4.3.
+
+```sh
+npm run studio:once
+```
+
+OpenCode can edit `game/main.gd` and `game/tests/smoke.gd` only. It has a
+four-minute limit and uses the sandbox's existing provider login and host
+network. Godot has a 90-second limit and tests a copy of the staged game without
+network, credentials, or access to the worktree. There is no unsandboxed fallback.
+Each run keeps its logs and worktree and prints the feature commit SHA on success.
+Idea contents are claimed once in local Git under `refs/studio/ideas/`: renaming
+an idea doesn't requeue it. Failed or interrupted claims stay blocked for manual
+review rather than automatic retry. The command never touches `main` or pushes.
+
+Use `npm run studio:watch` to keep processing pending ideas in filename order,
+one at a time, until Ctrl+C. Save complete ideas under another extension and
+rename them to `.md` when ready. Both commands share a repository lock. Each
+feature starts from the current `studio/develop` tip and fast-forwards it only
+after Godot tests pass on the combined game. If the tip changes during a run,
+the feature is preserved and processing stops without integrating it. If a run fails
+after claiming an idea, review its receipt, logs and worktree before clearing
+the gate with `git update-ref -d refs/studio/active`. Leave the idea receipt in
+place to prevent replay.
+
+### Optional Linear polling
+
+1. Create a personal API key with access to read issues, update statuses, and
+   create comments for the chosen team. Save only the key, outside Git:
+
+   ```sh
+   install -d -m 0700 ~/.config/game-studio
+   read -rs LINEAR_KEY
+   (umask 077; printf '%s\n' "$LINEAR_KEY" > ~/.config/game-studio/linear.key)
+   chmod 600 ~/.config/game-studio/linear.key
+   unset LINEAR_KEY
+   ```
+
+2. Add a `linear` object to `.studio-state/once.json`. Use Linear model UUIDs
+   for `teamId`, `labelId`, `readyId`, `inProgressId`, `doneId`, and optionally
+   `projectId`. The three statuses must belong to the chosen team. Set
+   `pollSeconds` if needed (default 60; minimum 15).
+3. For a supervised demo, stop any active `game-studio.service`. Put exactly one
+   issue in Ready with the dedicated label, leave no unclaimed local ideas,
+   and run `npm run studio:once`. Check the issue for Done and the commit
+   comment. To poll continuously in the foreground, run `npm run studio:watch`.
+
+Local ideas take priority. The Linear issue UUID is claimed in Git before any
+mutation; the review gate stays set until Linear confirms the comment and Done.
+If a write fails or is interrupted, review the issue and its `linear.log` before
+clearing the gate. A local commit can already be integrated even if the Linear
+writeback failed. Never delete the issue receipt to retry writeback.
+
+### Optional systemd user service
+
+Install the unit from the project root. If your checkout is not at
+`~/Projects/game-studio-reconciled`, adjust `WorkingDirectory` and `StandardOutput` in
+the installed unit before reloading.
+
+```sh
+mkdir -p -m 0700 .studio-state
+mkdir -p "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user"
+cp studio/game-studio.service "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/"
+systemctl --user daemon-reload
+systemctl --user start game-studio.service
+systemctl --user status game-studio.service
+tail -f .studio-state/watch-service.log
+systemctl --user stop game-studio.service
+```
+
+To start at user login, explicitly run `systemctl --user enable game-studio.service`.
+The service never restarts automatically. On failure, review the watcher log
+and any per-run logs and resolve the review gate before starting it again.
+
+The migrated `studio/develop` includes the lens feedback, lantern hint, keeper
+dialogue, and missing-save guidance changes.
+
 ## Status
 
 Run `npm run status` from the repository root to print JSON counts for local

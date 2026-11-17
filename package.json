@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "studio:once": "node studio/once.mjs",
+    "studio:watch": "node studio/once.mjs --watch",
     "cezar": "cezar",
     "inbox": "node studio/inbox.mjs",
     "linear": "node studio/linear.mjs",

@@ -50,6 +50,14 @@ restart attempts; back up the project and other state volumes together and
 investigate before restarting. An ordinary queued run may lack a path before its
 worktree is created, so this check can block safe restarts too. Do not edit or
 delete records merely to bypass the guard; reconcile the run and session first.
+The guard also reads `automations.json` before the run index. It refuses any
+enabled deferred task, a deferred launch marked `launching` or failed as
+`ambiguous`, any deferred record containing reserved run IDs, and any deferred
+record with `manualRequested: true`, even if no run index exists. It also
+refuses malformed automation indexes or unrecognized deferred records. This
+deliberately blocks ordinary enabled future deferred tasks as well as interrupted
+ones; it neither inspects external binding state nor makes replay safe. Stop all
+writers and preserve both automation and run state for operator review.
 
 A credential-free integrated Cezar/OpenCode container fixture exposed a replay
 risk: without the guard, Cezar restarted an active run under a different

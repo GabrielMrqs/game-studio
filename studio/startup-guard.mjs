@@ -5,6 +5,26 @@ import { execFileSync } from 'node:child_process';
 
 export async function checkStartup(repoRoot) {
   const data = join(repoRoot, '.ai/cezar');
+  let automationText;
+  try { automationText = await readFile(join(data, 'automations.json'), 'utf8'); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
+  if (automationText !== undefined) {
+    let definitions;
+    try { definitions = JSON.parse(automationText); }
+    catch { throw new Error('invalid Cezar automation index'); }
+    if (definitions?.version !== 1 || !Array.isArray(definitions.automations)) throw new Error('invalid Cezar automation index');
+    for (const item of definitions.automations) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) throw new Error('invalid Cezar automation index');
+      if (item.deferredStart === undefined) continue;
+      const deferred = item.deferredStart;
+      if (!deferred || typeof deferred !== 'object' || !['pending', 'launching', 'failed', 'missed'].includes(deferred.status) || !Array.isArray(deferred.runIds) || deferred.runIds.some((id) => typeof id !== 'string' || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id)) || (item.enabled !== undefined && typeof item.enabled !== 'boolean') || (deferred.manualRequested !== undefined && typeof deferred.manualRequested !== 'boolean') || (deferred.failureKind !== undefined && !['binding-invalid', 'transient', 'ambiguous'].includes(deferred.failureKind))) {
+        throw new Error('unrecognized deferred launch record');
+      }
+      if (item.enabled === true || deferred.status === 'launching' || deferred.failureKind === 'ambiguous' || deferred.runIds.length || deferred.manualRequested === true) {
+        throw new Error('deferred launch requires operator review before startup');
+      }
+    }
+  }
   let raw;
   try {
     raw = await readFile(join(data, 'runs.json'), 'utf8');

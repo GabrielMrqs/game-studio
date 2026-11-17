@@ -91,6 +91,47 @@ test('startup permits a fresh project and settled runs', async (t) => {
   await checkStartup(root);
 });
 
+test('startup refuses unresolved deferred launches even without a run index', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'studio-startup-deferred-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const data = join(root, '.ai/cezar'), file = join(data, 'automations.json');
+  await mkdir(data, { recursive: true });
+  const id = '12345678-1234-1234-1234-123456789012';
+  const enabled = JSON.stringify({ version: 1, automations: [{ id, enabled: true, deferredStart: { status: 'pending', runIds: [] } }] });
+  await writeFile(file, enabled);
+  await assert.rejects(checkStartup(root), /deferred launch.*operator review/);
+  assert.equal(await readFile(file, 'utf8'), enabled);
+  for (const deferredStart of [
+    { status: 'launching', runIds: [] },
+    { status: 'launching', runIds: [id] },
+    { status: 'failed', failureKind: 'ambiguous', runIds: [] },
+    { status: 'failed', failureKind: 'ambiguous', runIds: [id] },
+    { status: 'pending', runIds: [id] },
+    { status: 'pending', manualRequested: true, runIds: [] },
+  ]) {
+    const content = JSON.stringify({ version: 1, automations: [{ id, deferredStart }] });
+    await writeFile(file, content);
+    await assert.rejects(checkStartup(root), /deferred launch.*operator review/);
+    assert.equal(await readFile(file, 'utf8'), content);
+  }
+  const marker = join(root, 'worker-started');
+  const attempt = spawnSync('sh', ['-c', 'node "$1" && node -e "require(\'fs\').writeFileSync(process.argv[1], \'started\')" "$2"', 'fixture', resolve('studio/startup-guard.mjs'), marker], { cwd: root, encoding: 'utf8' });
+  assert.notEqual(attempt.status, 0);
+  assert.match(attempt.stderr, /deferred launch.*operator review/);
+  await assert.rejects(readFile(marker), { code: 'ENOENT' });
+  for (const content of ['{', '{}', JSON.stringify({ version: 1, automations: [{ id, deferredStart: { status: 'unknown', runIds: [] } }] })]) {
+    await writeFile(file, content);
+    await assert.rejects(checkStartup(root), /invalid.*automation|unrecognized.*deferred/);
+    assert.equal(await readFile(file, 'utf8'), content);
+  }
+  await writeFile(file, JSON.stringify({ version: 1, automations: [
+    { id, deferredStart: { status: 'pending', runIds: [] } },
+    { id: 'ordinary' },
+    { id: 'failed', deferredStart: { status: 'failed', failureKind: 'transient', runIds: [] } },
+  ] }));
+  await checkStartup(root);
+});
+
 test('startup refuses an on-disk worktree missing from a stale index without modifying it', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'studio-startup-unindexed-'));
   t.after(() => rm(root, { recursive: true, force: true }));

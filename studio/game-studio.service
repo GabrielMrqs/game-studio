@@ -1,0 +1,16 @@
+[Unit]
+Description=Local AI game studio watcher
+
+[Service]
+WorkingDirectory=%h/Projects/game-studio-reconciled
+ExecStart=/usr/bin/npm run studio:watch
+Restart=no
+KillMode=control-group
+TimeoutStopSec=15s
+SuccessExitStatus=143
+UMask=0077
+StandardOutput=append:%h/Projects/game-studio-reconciled/.studio-state/watch-service.log
+StandardError=inherit
+
+[Install]
+WantedBy=default.target
