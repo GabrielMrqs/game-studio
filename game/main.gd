@@ -144,7 +144,7 @@ func save_game() -> void:
 
 func load_game() -> void:
 	if not FileAccess.file_exists(save_path):
-		message.text = "No saved game found."
+		message.text = "No saved game found.\nUse Save to create one."
 		return
 	var file := FileAccess.open(save_path, FileAccess.READ)
 	if file == null:
