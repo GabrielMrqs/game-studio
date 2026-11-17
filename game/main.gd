@@ -98,6 +98,7 @@ func _select_lens() -> void:
 		selected_lens = not selected_lens
 		_show_room("Lens selected. Use it on a hotspot." if selected_lens else "Lens put away.")
 	else:
+		_clear(choices)
 		message.text = "Your inventory is empty."
 
 
