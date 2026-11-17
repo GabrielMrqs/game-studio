@@ -82,8 +82,11 @@ func _desk() -> void:
 
 
 func _keeper() -> void:
-	message.text = "Keeper: The lantern needs its missing lens. What would you like to ask?"
 	_clear(choices)
+	if lit:
+		message.text = "Keeper: Thank you for lighting the lantern!"
+		return
+	message.text = "Keeper: The lantern needs its missing lens. What would you like to ask?"
 	_button(choices, "Where is the lens?", func(): _answer("Keeper: I last saw it on the observatory desk."))
 	_button(choices, "Why light it?", func(): _answer("Keeper: Its beam guides our friends safely home."))
 
