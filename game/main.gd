@@ -116,6 +116,8 @@ func _lantern() -> void:
 		selected_lens = false
 		lit = true
 		_show_room("You fit the lens. The lantern shines across the water. You did it!")
+	elif has_lens:
+		_show_room("The lantern is dark. Select the lens in your inventory to use it.")
 	else:
 		_show_room("The lantern is dark. A round socket waits for a lens.")
 
