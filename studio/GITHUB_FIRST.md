@@ -29,7 +29,36 @@ logs and real Xvfb menu/gameplay screenshots. The Draft PR distinguishes local
 validation from CI and flags visual quality as unverified. Screenshots do not
 require approval before publication.
 
-## One-time migration
+## One-time migration: owner-operated bootstrap
+
+For `GabrielMrqs/game-studio` PR #1, run the host-side
+`studio/bootstrap-operator.mjs` directly as the repository owner. This is the
+only privileged activation; do not run it from a coding-agent session. The
+operator uses the owner's GitHub CLI authorization for the workflow-file push,
+Actions reads/reruns and merge. Give the permanent watcher a separate
+fine-grained PAT restricted to this repository (Contents and Pull requests
+read/write), stored at `~/.config/game-studio/github.key` with mode `0600`.
+Never put either credential in the model profile or pass it as an argument.
+
+Run the operator from its trusted checkout with `--activate FULL_COMMIT_SHA`.
+The SHA authorizes the exact existing local commit, including its workflow
+and tests. You can supply up to two additional preauthorized fast-forward
+candidate SHAs. The operator does not take authorization from PR text or
+model output. It checks protected `main`, runs local validation, publishes
+only the bootstrap branch, verifies the exact hosted run and job, and merges
+without bypassing branch protection. After verifying the actual merge commit,
+it checks the linked watcher checkout, preserves the old unit and recovery
+state, and waits for the service to complete its first real poll.
+
+Infrastructure failures have bounded reruns. For other failures, the operator
+saves the raw hosted logs locally and asks OpenCode for advice using only a
+fixed diagnostic classification. OpenCode receives no repository or GitHub
+credential mount. Its advice cannot change or authorize a candidate. Unexpected
+failures without another preauthorized commit stop safely instead of letting an
+agent change its own required CI or publish unreviewed code. Repeating the same
+activation after interruption reconciles PR state rather than merging twice.
+
+### Migration prerequisites and manual reference
 
 1. Wait for the old watcher to be idle, stop it, and verify `MainPID=0` and
    its cgroup is empty. Keep all branches, worktrees, `refs/studio/*`, and

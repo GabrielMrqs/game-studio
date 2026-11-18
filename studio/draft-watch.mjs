@@ -77,11 +77,16 @@ try {
   const tick = pipeline({ storage: journal(dir), dir, git: repo, github: gh, linear, game, signal, legacy });
   const interval = config.linear.pollSeconds ?? 60;
   if (!Number.isSafeInteger(interval) || interval < 15 || interval > 3600) throw new Error('Invalid pollSeconds.');
+  let announced = false;
   do {
     try {
       const main = await repo.refresh();
       if (check) console.log(`Preflight passed: protected main ${main}; ${legacy.size} legacy recovery mapping(s).`);
-      else await tick(main);
+      else {
+        await tick(main);
+        if (!announced && watch) console.log(`Watcher ready pid=${process.pid} main=${main}`);
+        announced = true;
+      }
     } catch (error) {
       if (!watch || !(error instanceof Transient)) throw error;
       console.warn(error.message);
