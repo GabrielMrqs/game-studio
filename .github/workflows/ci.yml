@@ -20,8 +20,11 @@ jobs:
           node-version: 24
       - name: Prepare sandbox fixtures
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb imagemagick bubblewrap libgl1-mesa-dri
+          # The hosted VM's regional Ubuntu mirror stalled the previous run.
+          sudo sed -Ei 's|https?://[^ /]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          apt_opts=(-o Acquire::Retries=3 -o Acquire::http::Timeout=20)
+          sudo apt-get "${apt_opts[@]}" update
+          sudo apt-get "${apt_opts[@]}" install -y --no-install-recommends xvfb xauth imagemagick bubblewrap libgl1-mesa-dri
           node_bin="$(readlink -f "$(command -v node)")"
           if [ "$node_bin" != /usr/bin/node ]; then
             sudo install -m 0755 "$node_bin" /usr/bin/node
@@ -42,7 +45,7 @@ jobs:
       - run: npm test
       - name: Download Godot 4.3
         run: |
-          curl -fsSL -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          curl -fsSL --retry 3 --retry-all-errors --max-time 90 -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
           echo "fd52bb4ba8acc30ca5accd1c566d470ad7282f891ccc0995dfafabcf92bcf76280ce182bf9d80ebd885f3ed2165d01e1fc3f2928436b15498dfbd98656c2a45a  $RUNNER_TEMP/godot.zip" | sha512sum -c -
           unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
       - run: 'STUDIO_TEST_GRAPHICS=1 GODOT_BIN="$RUNNER_TEMP/godot/Godot_v4.3-stable_linux.x86_64" node --test studio/preview.test.mjs'
