@@ -4,10 +4,17 @@ Create issues in the configured Linear team/project with the studio label and
 put them in **Ready**. Use Linear's **blocked by** relations for prerequisites.
 The watcher records the issue UUID and immutable branch name before changing
 Linear, implements in a private worktree with GPT-6.2 Sol, runs Godot QA, and
-publishes the tested commit as a Draft PR. Linear gets an attachment and moves
+publishes the tested commit as a PR. Linear gets an attachment and moves
 to **In Review**, never Done on publication. If `doneId` is configured, the
 watcher marks Done only after GitHub confirms the PR was merged to `main` and
 the tested commit is in `main`. GitHub links and the journal retain the exact SHA.
+Set `github.autoMerge` to `true` with a configured Linear `doneId` to enable
+unattended integration. The watcher then opens ready PRs, waits for the
+required GitHub Actions `test` check on the exact head, and submits only an
+ordinary merge commit under GitHub's rules. Automatic mode processes one
+issue through CI at a time so the next issue starts from current `main`.
+Outside merges that leave a PR behind or conflicted are reported without
+rewriting the existing branch. With automatic merge off, it opens Draft PRs.
 
 Independent PRs target `main`. A dependent PR targets the nearest compatible
 open parent; once that parent lands in `main`, the watcher retargets the child.
@@ -28,8 +35,9 @@ require approval before publication.
    its cgroup is empty. Keep all branches, worktrees, `refs/studio/*`, and
    `.studio-state` files and protect backups as sensitive. Do not clear the
    legacy active gate.
-2. Protect GitHub `main`: require PRs, review and CI (`test`), block force pushes
-   and deletion, and disallow the studio credential from bypassing rules.
+2. Protect GitHub `main`: require PRs and strict, up-to-date GitHub Actions CI
+   (`test`), block force pushes and deletion, and allow no bypass. Set required
+   human reviews to zero for automatic mode.
    In repository settings, enable merge commits and disable squash/rebase
    merges. An authorized operator can publish the one-time bootstrap:
 
@@ -45,7 +53,7 @@ require approval before publication.
    ```
 
    Stop if the ancestry check fails. Use operator credentials for this push:
-   it introduces a workflow file. Review the PR and CI before marking it ready
+   it introduces a workflow file. Verify the PR and CI before marking it ready
    and merging with a **merge commit**. The bootstrap imports the validated
    game tree without joining the unrelated histories. The watcher refuses a
    non-playable `main`.
@@ -55,7 +63,8 @@ require approval before publication.
    `gh` login or put this credential in the OpenCode profile. Use a Linear key
    able to read issues and update issue states and attachments, saved privately
    at `~/.config/game-studio/linear.key`.
-4. The existing `.studio-state/once.json` already points to this repository,
+4. Set `github.autoMerge` to `true` to integrate without approvals. The existing
+   `.studio-state/once.json` already points to this repository,
    Linear's In Review state, and `recoveryRun: "once-DBOHsX"` for GAB-19.
    The watcher verifies the legacy worktree/ref/receipt tuple and exact
    imported game tree. It copies only allowlisted edits whose base entries

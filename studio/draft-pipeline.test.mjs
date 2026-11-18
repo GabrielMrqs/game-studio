@@ -19,6 +19,54 @@ test('bounded backoff honors retry hints', async () => {
   assert.equal(calls, 4);
 });
 
+test('automatic merge requires the exact GitHub Actions check, strict protection and the PR head', async () => {
+  const repo = 'owner/game';
+  const sha = 'a'.repeat(40);
+  const main = 'b'.repeat(40);
+  const job = { id: 'linear-id', sha, branch: 'feature/GAB-1-demo', pr: 1 };
+  const pr = {
+    number: 1, html_url: `https://github.com/${repo}/pull/1`, body: '<!-- studio-issue:linear-id -->',
+    head: { ref: job.branch, sha, repo: { full_name: repo } },
+    base: { ref: 'main', sha: main, repo: { full_name: repo } },
+    state: 'open', draft: false, mergeable: true, mergeable_state: 'clean',
+  };
+  let runs = [];
+  let writes = 0;
+  let protectedMain = false;
+  const gh = github(repo, 'github_pat_fixture', new AbortController().signal, async (url, options) => {
+    const path = new URL(url).pathname.replace(`/repos/${repo}`, '');
+    if (options.method === 'PUT') {
+      assert.equal(path, '/pulls/1/merge');
+      assert.deepEqual(JSON.parse(options.body), { sha, merge_method: 'merge' });
+      writes++;
+      return Response.json({ merged: true, sha });
+    }
+    if (path === '/pulls/1') return Response.json(pr);
+    if (path.endsWith('/check-runs')) return Response.json({ total_count: runs.length, check_runs: runs });
+    if (path === '/branches/main') return Response.json({ protected: protectedMain });
+    if (path === '/rules/branches/main') return Response.json([
+      ...['pull_request', 'deletion', 'non_fast_forward'].map(type => ({ type })),
+      { type: 'required_status_checks', parameters: {
+        strict_required_status_checks_policy: true, required_status_checks: [{ context: 'test', integration_id: 15368 }],
+      } },
+    ]);
+    assert.equal(path, '');
+    return Response.json({ default_branch: 'main', allow_merge_commit: true });
+  }, true);
+  await gh.merge(job, main);
+  const check = { name: 'test', app: { id: 15368 }, head_sha: sha, status: 'completed', conclusion: 'success' };
+  runs = [{ ...check, head_sha: main }];
+  await gh.merge(job, main);
+  runs = [{ ...check, conclusion: 'failure' }];
+  await assert.rejects(gh.merge(job, main), /test failed/);
+  runs = [check];
+  await assert.rejects(gh.merge(job, main), /protected/);
+  assert.equal(writes, 0);
+  protectedMain = true;
+  assert.equal(await gh.merge(job, main), sha);
+  assert.equal(writes, 1);
+});
+
 test('imports recovery edits across unrelated histories only with a matching baseline and untouched paths', t => {
   const root = mkdtempSync(join(tmpdir(), 'draft-bootstrap-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));

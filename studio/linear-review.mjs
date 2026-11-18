@@ -83,7 +83,7 @@ export function linearReview(config, key, signal, fetcher = fetch) {
     async attach(id, url) {
       // Linear upserts attachments with the same URL on the same issue.
       const { attachmentCreate: result } = await request(`mutation($id:String!,$url:String!){
-        attachmentCreate(input:{issueId:$id,url:$url,title:"GitHub Draft PR"}){success attachment{url}} }`, { id, url });
+        attachmentCreate(input:{issueId:$id,url:$url,title:"GitHub PR"}){success attachment{url}} }`, { id, url });
       if (!result?.success || result.attachment?.url !== url) throw new Error('Linear did not confirm PR attachment.');
     },
     async blocker(id, reason) {

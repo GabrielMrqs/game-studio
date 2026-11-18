@@ -111,7 +111,7 @@ export function pipeline({ storage, dir, git, github, linear, game, signal, lega
       const pr = await github.draft(job, target, [
         `Linear: ${job.linearUrl}`, `Validated commit: \`${job.sha}\``,
         '**Local checks passed:** Godot import, startup, gameplay/regression smoke, UI navigation, and screenshot integrity.',
-        '**Visual quality is unverified.** Review the main-menu and gameplay PNGs in the Godot QA artifact.',
+        '**Visual quality is unverified.** See the main-menu and gameplay PNGs in the Godot QA artifact.',
         `[Commit checks](https://github.com/${git.repository}/commit/${job.sha}/checks) · [QA artifacts](${checks}) — CI results are separate from local checks.`,
       ].join('\n\n'));
       save(job, pr);
@@ -133,6 +133,9 @@ export function pipeline({ storage, dir, git, github, linear, game, signal, lega
         await linear.integrated?.(job.id);
         save(job, { integrated: true });
       }
+    } else if (!job.integrated && github.merge) {
+      const merged = await github.merge(job, main);
+      if (merged) report(`${job.identifier}: GitHub merged ${job.url} as ${merged}; waiting for fetched main.`);
     }
   }
 
@@ -160,6 +163,9 @@ export function pipeline({ storage, dir, git, github, linear, game, signal, lega
       signal.throwIfAborted();
       await safely(job, main);
     }
+    // Strict protection requires each feature to include the latest main. Keep one
+    // PR in flight in automatic mode; an isolated failed job does not hold the queue.
+    if (github.merge && jobs.some(job => !job.blocked && !job.integrated)) return;
     async function* candidates() {
       for (const recovery of legacy?.values() ?? []) yield recovery.issue;
       yield* linear.ready();
@@ -189,6 +195,7 @@ export function pipeline({ storage, dir, git, github, linear, game, signal, lega
       save(job, {});
       jobs.push(job);
       await safely(job, main);
+      if (github.merge && !job.blocked) return;
     }
   };
 }

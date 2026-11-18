@@ -1,7 +1,8 @@
 # AI Game Studio
 
 The [GitHub-first watcher](studio/GITHUB_FIRST.md) consumes Ready Linear issues
-and publishes validated work as GitHub Draft PRs. Only reviewers merge.
+and publishes validated work as GitHub PRs. It can merge automatically when
+enabled and GitHub's required checks pass.
 The local `studio/develop` runner and Cezar workflows below are legacy tools;
 do not run them alongside the GitHub-first watcher.
 

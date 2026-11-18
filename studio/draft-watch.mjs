@@ -64,7 +64,9 @@ try {
   const profile = privateDir(resolve(root, config.opencodeHome ?? join(homedir(), '.local/share/game-studio/opencode')));
   const [keyPath, key] = secret('github.key', profile);
   const [, linearKey] = secret('linear.key', profile);
-  const gh = github(config.github.repository, key, signal);
+  const autoMerge = config.github.autoMerge === true;
+  if (autoMerge && !config.linear.doneId) throw new Error('Automatic merge requires Linear doneId.');
+  const gh = github(config.github.repository, key, signal, fetch, autoMerge);
   const linear = linearReview(config.linear, linearKey, signal);
   const game = gameRunner(config);
   await gh.preflight();
