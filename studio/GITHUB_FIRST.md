@@ -26,8 +26,9 @@ watcher attaches its PR URL and merge SHA to Linear and marks the issue Done.
   for logs and reruns. Linear needs issue and attachment writes.
 - GitHub `main` must have no bypass, require a PR and a strict GitHub Actions
   `test` check, block deletion and force-pushes, and allow merge commits only,
-  without human approvals. Land the migration PR as the repository owner
-  before enabling the service. The watcher will not merge that PR itself.
+  without human approvals. The repository owner or an explicitly authorized
+  maintainer lands the migration PR before enabling the service. The watcher
+  merges only its own Linear feature PRs.
 - On the merged checkout, run `npm run studio:draft -- --check` before
   installing the unit. If an old unit has a `checkout.conf` drop-in, its
   working directory must also point at the linked checkout; make sure the old

@@ -122,8 +122,7 @@ export function draftGit(root, dir, repository, keyPath, signal, legacy) {
         if (tip !== (job.previous ?? '') || (tip && !contains(tip, job.sha))) {
           throw new Error('Remote feature branch changed; refusing overwrite.');
         }
-        // The lease checks ownership atomically; the ancestry check above permits only fast-forwards.
-        await network('push', `--force-with-lease=${ref}:${tip}`, remote, `${job.sha}:${ref}`);
+        await network('push', remote, `${job.sha}:${ref}`);
       }, signal);
       local('update-ref', `${refs}/${job.branch}`, job.sha);
     },
