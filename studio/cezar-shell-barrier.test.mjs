@@ -54,15 +54,22 @@ function wait() {
     if (!fs.existsSync('/home/agent/.local/share/opencode/opencode.db')) process.exit(1);
     fs.writeFileSync('/project/agent-home-present', 'yes');
     const isolated = ${isolated};
+    // This noninteractive check needs no nested devpts or other device mounts.
     const args = isolated ? [
-      '--unshare-all', '--die-with-parent', '--new-session',
+      '--unshare-all', '--unshare-user', '--disable-userns', '--die-with-parent', '--new-session',
       '--ro-bind', '/usr', '/usr', '--ro-bind', '/lib', '/lib', '--ro-bind-try', '/lib64', '/lib64',
-      '--symlink', 'usr/bin', '/bin', '--proc', '/proc', '--dev', '/dev', '--tmpfs', '/tmp',
+      '--symlink', 'usr/bin', '/bin', '--proc', '/proc', '--dev-bind', '/dev/null', '/dev/null', '--tmpfs', '/tmp',
       '--bind', '/project', '/project', '--chdir', process.cwd(),
       '--clearenv', '--setenv', 'HOME', '/tmp', '--setenv', 'PATH', '/usr/bin:/bin',
       '/usr/bin/bash', ...process.argv.slice(2),
     ] : process.argv.slice(2);
-    const result = spawnSync(isolated ? '/usr/bin/bwrap' : '/usr/bin/bash', args, { stdio: 'inherit', env: process.env });
+    const result = spawnSync(isolated ? '/usr/bin/bwrap' : '/usr/bin/bash', args, {
+      encoding: 'utf8', stdio: ['inherit', 'pipe', 'pipe'], env: process.env,
+    });
+    if (result.status !== 0) fs.writeFileSync('/project/check-error',
+      String(result.error || result.signal || result.status) + ': ' + result.stderr);
+    process.stdout.write(result.stdout || '');
+    process.stderr.write(result.stderr || '');
     process.exit(result.status ?? 1);
   }
   if (Date.now() >= until) process.exit(1);
@@ -87,15 +94,17 @@ wait();
     '--setenv', 'CEZ_HOME', '/tmp/cezar', '--setenv', 'CEZ_DRY_RUN', '1',
     '--setenv', 'CEZ_AUTONAME', '0', '--setenv', 'CEZ_TELEMETRY', '0', '--setenv', 'CEZ_RELAY', '0',
     '/usr/bin/node', '/tools/node_modules/@open-mercato/cezar/dist/index.js', '--no-open', '--port', String(port),
-  ], { stdio: 'ignore' });
+  ], { stdio: ['ignore', 'ignore', 'pipe'] });
+  let stderr = '';
+  child.stderr.on('data', data => { stderr += data; });
   const url = `http://127.0.0.1:${port}`;
   let ready = false;
   for (let i = 0; i < 100 && !ready; i++) {
-    if (child.exitCode !== null || child.signalCode !== null) throw new Error('fixture Cezar exited before readiness');
+    if (child.exitCode !== null || child.signalCode !== null) throw new Error(`fixture Cezar exited before readiness: ${stderr}`);
     try { ready = (await fetch(`${url}/api/v1/health`)).ok; } catch {}
     if (!ready) await new Promise((done) => setTimeout(done, 100));
   }
-  assert.ok(ready);
+  assert.ok(ready, stderr || 'fixture Cezar did not become ready');
   const response = await fetch(`${url}/api/v1/runs`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ workflow: 'barrier', task: 'fixture', runner: 'opencode', worktree: true, autonomous: false }),
@@ -117,10 +126,14 @@ wait();
   await writeFile(join(permits, id), id);
   let output;
   for (let i = 0; i < 100; i++) {
+    const failure = await readFile(join(project, 'check-error'), 'utf8').catch(error => {
+      if (error.code !== 'ENOENT') throw error;
+    });
+    assert.equal(failure, undefined, failure);
     try { output = await readFile(marker, 'utf8'); break; } catch (error) { if (error.code !== 'ENOENT') throw error; }
     await new Promise((done) => setTimeout(done, 50));
   }
-  assert.equal(output, 'executed');
+  assert.equal(output, 'executed', `Cezar did not write the execution marker after the matching permit: ${stderr}`);
   assert.equal(await readFile(join(project, 'agent-home-present'), 'utf8'), 'yes');
   const exposed = join(project, '.ai/cezar/worktrees', id, 'credential-exposed');
   if (isolated) {
