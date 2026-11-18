@@ -54,6 +54,139 @@ func check_art_layout(asset: String, anchors: Dictionary) -> void:
 		check(matched, asset + " hotspot aligns with painted object: " + caption)
 
 
+func check_audio() -> void:
+	var path := "user://smoke_audio_%d.cfg" % Time.get_ticks_usec()
+	game = load("res://main.tscn").instantiate()
+	game.sfx.settings_path = path
+	root.add_child(game)
+	var tick := [1000]
+	game.sfx.clock = func() -> int: return tick[0]
+	var heard: Array[String] = []
+	game.sfx.cue_started.connect(func(cue: String): heard.append(cue))
+
+	var start: Button = game.menu.get_child(1)
+	var continue_button: Button = game.menu.get_child(2)
+	start.mouse_entered.emit()
+	tick[0] += 250
+	start.mouse_entered.emit()
+	start.focus_entered.emit()
+	check(heard == ["hover"], "same target and mouse-to-focus handoff do not retrigger hover")
+	start.mouse_exited.emit()
+	continue_button.mouse_entered.emit()
+	continue_button.mouse_exited.emit()
+	start.mouse_entered.emit()
+	check(heard == ["hover", "hover"], "rapid sweep skips extra hover cues")
+	press(game.menu, "Continue")
+	check(heard == ["hover", "hover", "confirm"], "confirm interrupts hover without a second action cue")
+	tick[0] += 250
+	press(game.menu, "Back")
+	check(heard.back() == "back", "continue back plays cancel cue")
+	tick[0] += 250
+	game.audio_launcher.pressed.emit()
+	check(game.audio_panel.visible and not game.menu.get_parent().visible, "audio settings can be reached from the title menu")
+	tick[0] += 250
+	escape()
+	check(heard.back() == "back" and game.menu.get_parent().visible, "settings back restores the title menu")
+
+	tick[0] += 250
+	press(game.menu, "New Game")
+	tick[0] += 250
+	press(game.intake_panel.get_child(0), "Review Case File")
+	check(heard.back() == "open", "review case file plays paper open")
+	tick[0] += 250
+	press(game.case_panel.get_child(0), "Close")
+	check(heard.back() == "close", "case file plays paper close")
+	tick[0] += 250
+	game.hotspots.get_child(0).focus_entered.emit()
+	check(heard.back() == "target", "keyboard hotspot focus uses a distinct cue")
+	tick[0] += 250
+	press(game.hotspots, "Examine desk")
+	check(heard.back() == "clue", "collecting the lens plays discovery")
+	tick[0] += 250
+	press(game.hotspots, "Inspect delivery record")
+	check(heard.back() == "open", "opening an ordinary document plays paper open")
+	var count := heard.size()
+	game.hotspots.get_child(0).mouse_entered.emit()
+	press(game.document_panel.get_child(0), "Close")
+	check(heard.size() == count and game.hotspots.visible, "hidden hotspots and a same-tick close do not stack audio or block navigation")
+
+	tick[0] += 250
+	press(game.hotspots, "Teatro Aurora →")
+	check(heard.back() == "door", "door uses the room transition cue")
+	tick[0] += 250
+	count = heard.size()
+	press(game.hotspots, "Old door photos")
+	check(heard.size() == count + 1 and heard.back() == "clue", "first evidence inspection emits only one combined discovery cue")
+	tick[0] += 250
+	press(game.document_panel.get_child(0), "Close")
+	tick[0] += 250
+	press(game.hotspots, "Old door photos")
+	check(heard.back() == "open", "rereading evidence does not replay discovery")
+
+	tick[0] += 250
+	escape()
+	tick[0] += 250
+	paused = true
+	count = heard.size()
+	press(game.pause_menu, "Audio Settings")
+	check(game.sfx.can_process() and heard.size() == count + 1 and heard.back() == "open", "settings cue works even with the scene tree paused")
+	paused = false
+	game.sfx_slider.value = 34
+	game.sfx_mute.button_pressed = true
+	tick[0] += 250
+	count = heard.size()
+	escape()
+	check(heard.size() == count and game.pause_overlay.visible, "mute blocks playback and settings back restores pause")
+	press(game.pause_menu, "Resume")
+	check(game.document_panel.visible and heard.size() == count, "muted resume restores the investigated document")
+	var restored = load("res://sfx.gd").new()
+	restored.settings_path = path
+	root.add_child(restored)
+	check(restored.muted and is_equal_approx(restored.level, 0.34), "new SFX instance loads volume and mute from disk")
+	restored.free()
+	game.sfx.set_mix(0.0, false)
+	tick[0] += 250
+	game.sfx.action("confirm")
+	check(heard.size() == count, "zero volume stays silent without mute")
+	game.sfx.set_mix(0.34, false)
+	tick[0] += 250
+	game.sfx.action("confirm")
+	check(heard.size() == count + 1 and heard.back() == "confirm", "raising volume restores immediate feedback")
+
+	# Exercise the same wired control across overlay hides and tree exits.
+	var reusable := Button.new()
+	game.add_child(reusable)
+	game.sfx.wire_hover(reusable, "hover")
+	tick[0] += 250
+	count = heard.size()
+	reusable.disabled = true
+	reusable.mouse_entered.emit()
+	reusable.focus_entered.emit()
+	check(heard.size() == count, "disabled controls ignore hover and focus")
+	reusable.disabled = false
+	reusable.mouse_entered.emit()
+	reusable.focus_entered.emit()
+	check(heard.size() == count + 1 and heard.back() == "hover", "enabling a control allows one fresh hover cue")
+	count = heard.size()
+	reusable.hide()
+	tick[0] += 250
+	reusable.mouse_entered.emit()
+	reusable.focus_entered.emit()
+	check(heard.size() == count, "hidden controls ignore hover and focus")
+	reusable.show()
+	reusable.mouse_entered.emit()
+	check(heard.size() == count + 1, "showing a control allows a fresh pointer entry")
+	reusable.focus_entered.emit()
+	game.remove_child(reusable)
+	game.add_child(reusable)
+	tick[0] += 250
+	reusable.focus_entered.emit()
+	check(heard.size() == count + 2, "tree exit clears both mouse and focus tracking for a reused control")
+	reusable.free()
+	game.free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
 func run_test() -> void:
 	game = load("res://main.tscn").instantiate()
 	root.add_child(game)
@@ -417,7 +550,8 @@ func run_test() -> void:
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(game.save_path))
 	game._new_game()
 	check(game.rectification == "" and game.reconstruction_solved == [false, false] and game.intake_panel.visible, "new game resets the completed case for replay")
-	game.queue_free()
+	game.free()
+	check_audio()
 	if failures == 0:
-		print("PASS: dialogue, rooms, hotspots, inventory, puzzle and save/load")
+		print("PASS: dialogue, rooms, hotspots, inventory, puzzle, save/load and SFX")
 	quit(1 if failures else 0)
