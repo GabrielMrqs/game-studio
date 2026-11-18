@@ -21,7 +21,9 @@ jobs:
       - name: Prepare sandbox fixtures
         run: |
           # The hosted VM's regional Ubuntu mirror stalled the previous run.
-          sudo sed -Ei 's|https?://[^ /]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sudo sed -Ei 's|https?://[^ /]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          fi
           apt_opts=(-o Acquire::Retries=3 -o Acquire::http::Timeout=20)
           sudo apt-get "${apt_opts[@]}" update
           sudo apt-get "${apt_opts[@]}" install -y --no-install-recommends xvfb xauth imagemagick bubblewrap libgl1-mesa-dri

@@ -4,11 +4,14 @@ set -eu
 if [ "${1-}" != --inside ]; then
   [ "$#" -eq 4 ]
   here=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+  # Debian/Ubuntu's convert symlink goes through /etc/alternatives, outside these mounts.
+  converter=$(readlink -e /usr/bin/convert)
   exec bwrap --unshare-all --die-with-parent --new-session \
     --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind-try /lib64 /lib64 \
     --symlink usr/bin /bin --proc /proc --dev /dev --tmpfs /tmp --ro-bind-try /etc/fonts /etc/fonts \
     --clearenv --setenv PATH /opt/bin:/usr/bin:/bin --setenv HOME /tmp \
     --ro-bind "$1" /opt/bin/Xvfb --ro-bind "$2" /opt/bin/godot \
+    --ro-bind "$converter" /opt/bin/convert \
     --ro-bind "$3" /work/game --bind "$4" /evidence \
     --ro-bind "$here/preview.gd" /opt/preview.gd \
     --ro-bind "$here/xvfb-preview.sh" /opt/xvfb-preview.sh \

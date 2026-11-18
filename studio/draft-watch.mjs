@@ -60,13 +60,13 @@ try {
   if (process.argv.length !== (watch || check ? 3 : 2)) throw new Error('Expected --watch or --check.');
   lock = lockRepo();
   const config = JSON.parse(readFileSync(join(safeConfig, 'once.json')));
-  if (!config.github?.repository || !config.linear) throw new Error('Configure github.repository and Linear reviewId in .studio-state/once.json.');
+  if (!config.github?.repository || !config.linear?.doneId) {
+    throw new Error('Configure github.repository and Linear doneId in .studio-state/once.json.');
+  }
   const profile = privateDir(resolve(root, config.opencodeHome ?? join(homedir(), '.local/share/game-studio/opencode')));
   const [keyPath, key] = secret('github.key', profile);
   const [, linearKey] = secret('linear.key', profile);
-  const autoMerge = config.github.autoMerge === true;
-  if (autoMerge && !config.linear.doneId) throw new Error('Automatic merge requires Linear doneId.');
-  const gh = github(config.github.repository, key, signal, fetch, autoMerge);
+  const gh = github(config.github.repository, key, signal);
   const linear = linearReview(config.linear, linearKey, signal);
   const game = gameRunner(config);
   await gh.preflight();

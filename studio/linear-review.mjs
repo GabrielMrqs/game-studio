@@ -3,11 +3,11 @@ import { retry, retryAfter, Transient } from './github.mjs';
 export const uuid = /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 
 export function linearReview(config, key, signal, fetcher = fetch) {
-  const { teamId, projectId, labelId, readyId, inProgressId, reviewId, doneId } = config;
-  const statuses = [readyId, inProgressId, reviewId, ...(doneId ? [doneId] : [])];
+  const { teamId, projectId, labelId, readyId, inProgressId, doneId } = config;
+  const statuses = [readyId, inProgressId, doneId];
   if (![teamId, labelId, ...statuses, ...(projectId ? [projectId] : [])].every(x => uuid.test(x)) ||
       new Set(statuses.map(x => x.toLowerCase())).size !== statuses.length ||
-      !/^[\x21-\x7e]+$/.test(key)) throw new Error('Invalid Linear review configuration or key.');
+      !/^[\x21-\x7e]+$/.test(key)) throw new Error('Invalid Linear configuration or key.');
   const filter = {
     team: { id: { eq: teamId } }, labels: { id: { eq: labelId } }, state: { id: { eq: readyId } },
     ...(projectId ? { project: { id: { eq: projectId } } } : {}),
@@ -59,7 +59,7 @@ export function linearReview(config, key, signal, fetcher = fetch) {
     async verify() {
       const { team } = await request(`query($id:String!){ team(id:$id){states(first:100){nodes{id type}}} }`, { id: teamId });
       if (!statuses.every((id, i) => team?.states.nodes.some(
-        state => state.id === id && state.type === ['unstarted', 'started', 'started', 'completed'][i]))) {
+        state => state.id === id && state.type === ['unstarted', 'started', 'completed'][i]))) {
         throw new Error('Linear workflow state types do not match configuration.');
       }
     },
@@ -78,13 +78,17 @@ export function linearReview(config, key, signal, fetcher = fetch) {
       }
       return deps;
     },
-    state: (id, phase) => setState(id, phase === 'review' ? reviewId : inProgressId),
-    integrated: id => doneId ? setState(id, doneId) : undefined,
-    async attach(id, url) {
+    start: id => setState(id, inProgressId),
+    async integrated(id, url, sha) {
       // Linear upserts attachments with the same URL on the same issue.
-      const { attachmentCreate: result } = await request(`mutation($id:String!,$url:String!){
-        attachmentCreate(input:{issueId:$id,url:$url,title:"GitHub PR"}){success attachment{url}} }`, { id, url });
-      if (!result?.success || result.attachment?.url !== url) throw new Error('Linear did not confirm PR attachment.');
+      const { attachmentCreate: result } = await request(`mutation($id:String!,$url:String!,$sha:String!){
+        attachmentCreate(input:{issueId:$id,url:$url,title:"Merged GitHub PR",subtitle:$sha}){
+          success attachment{url subtitle}
+        } }`, { id, url, sha });
+      if (!result?.success || result.attachment?.url !== url || result.attachment?.subtitle !== sha) {
+        throw new Error('Linear did not confirm the merge attachment.');
+      }
+      await setState(id, doneId);
     },
     async blocker(id, reason) {
       const url = `https://linear.app/issue/${id}#studio-blocked`;

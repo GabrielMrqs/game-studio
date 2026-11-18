@@ -1,13 +1,13 @@
 [Unit]
-Description=Local AI game studio watcher
+Description=Linear to GitHub Game Studio
 
 [Service]
-WorkingDirectory=%h/Projects/game-studio-reconciled
+WorkingDirectory=%h/Projects/game-studio-github-first
 ExecStart=/usr/bin/node studio/draft-watch.mjs --watch
 # An exiting watcher does not mean Bubblewrap has finished tearing down.
 ExitType=cgroup
 Restart=on-failure
-RestartSec=30s
+RestartSec=15s
 RestartPreventExitStatus=1
 KillMode=control-group
 TimeoutStopSec=15s

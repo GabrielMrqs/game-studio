@@ -44,7 +44,7 @@ export function draftGit(root, dir, repository, keyPath, signal, legacy) {
     }
   }
   return {
-    repository, contains, remoteTip,
+    contains,
     claimed: id => Boolean(resolve(`refs/studio/linear/${id.toLowerCase()}`)),
     async refresh() {
       await retry(() => network('fetch', '--no-tags', '--prune', remote,
@@ -99,14 +99,16 @@ export function draftGit(root, dir, repository, keyPath, signal, legacy) {
       if (!isFeature(job.branch) || !/^[a-f0-9]{40}$/.test(job.tree)) throw new Error('Invalid validated commit inputs.');
       const ref = `refs/heads/${job.branch}`;
       let sha = resolve(ref);
+      const parent = job.previous ?? job.base;
       const marker = `Studio-Issue: ${job.id}`;
-      if (!sha) {
-        sha = local('-c', 'commit.gpgsign=false', 'commit-tree', job.tree, '-p', job.base,
+      if (!sha || sha === job.previous) {
+        if (job.previous && resolve(`${job.previous}^{tree}`) === job.tree) throw new Error('Hosted repair did not change the checked tree.');
+        sha = local('-c', 'commit.gpgsign=false', 'commit-tree', job.tree, '-p', parent,
           '-m', `Gameplay: Linear ${job.identifier}`, '-m', marker);
-        local('update-ref', '--no-deref', ref, sha, zero);
+        local('update-ref', '--no-deref', ref, sha, job.previous ?? zero);
       }
       if (local('show', '-s', '--format=%P %T%n%B', sha) !==
-          `${job.base} ${job.tree}\nGameplay: Linear ${job.identifier}\n\n${marker}`) {
+          `${parent} ${job.tree}\nGameplay: Linear ${job.identifier}\n\n${marker}`) {
         throw new Error('Existing feature branch is not the tested commit.');
       }
       return sha;
@@ -117,10 +119,20 @@ export function draftGit(root, dir, repository, keyPath, signal, legacy) {
       await retry(async () => {
         const tip = (await network('ls-remote', remote, ref)).split(/\s/)[0];
         if (tip === job.sha) return;
-        if (tip) throw new Error('Remote feature branch exists with a different commit; refusing overwrite.');
-        await network('push', `--force-with-lease=${ref}:`, remote, `${job.sha}:${ref}`);
+        if (tip !== (job.previous ?? '') || (tip && !contains(tip, job.sha))) {
+          throw new Error('Remote feature branch changed; refusing overwrite.');
+        }
+        // The lease checks ownership atomically; the ancestry check above permits only fast-forwards.
+        await network('push', `--force-with-lease=${ref}:${tip}`, remote, `${job.sha}:${ref}`);
       }, signal);
       local('update-ref', `${refs}/${job.branch}`, job.sha);
+    },
+    verifyMerge(job, sha, main) {
+      const parents = local('show', '-s', '--format=%P', sha).split(' ');
+      if (!contains(sha, main) || parents.length !== 2 || parents[1] !== job.sha ||
+          resolve(`${sha}^{tree}`) !== resolve(`${job.sha}^{tree}`)) {
+        throw new Error('Expected the tested tree in a merge commit on main.');
+      }
     },
   };
 }

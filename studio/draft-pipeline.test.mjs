@@ -43,6 +43,14 @@ test('automatic merge requires the exact GitHub Actions check, strict protection
     }
     if (path === '/pulls/1') return Response.json(pr);
     if (path.endsWith('/check-runs')) return Response.json({ total_count: runs.length, check_runs: runs });
+    if (path === '/actions/jobs/123') return Response.json({ steps: [{ name: 'Godot QA', conclusion: 'failure' }] });
+    if (path === '/actions/jobs/123/logs') return new Response(null, { status: 302, headers: {
+      location: 'https://example.blob.core.windows.net/log',
+    } });
+    if (new URL(url).hostname === 'example.blob.core.windows.net') {
+      assert.equal(options.headers, undefined);
+      return new Response('ERROR: UI assertion failed\nAuthorization: fake value');
+    }
     if (path === '/branches/main') return Response.json({ protected: protectedMain });
     if (path === '/rules/branches/main') return Response.json([
       ...['pull_request', 'deletion', 'non_fast_forward'].map(type => ({ type })),
@@ -52,18 +60,21 @@ test('automatic merge requires the exact GitHub Actions check, strict protection
     ]);
     assert.equal(path, '');
     return Response.json({ default_branch: 'main', allow_merge_commit: true });
-  }, true);
-  await gh.merge(job, main);
-  const check = { name: 'test', app: { id: 15368 }, head_sha: sha, status: 'completed', conclusion: 'success' };
+  });
+  await gh.advance(job, main);
+  const check = { id: 123, details_url: `https://github.com/${repo}/actions/runs/456/job/123`,
+    name: 'test', app: { id: 15368 }, head_sha: sha, status: 'completed', conclusion: 'success' };
   runs = [{ ...check, head_sha: main }];
-  await gh.merge(job, main);
+  await gh.advance(job, main);
   runs = [{ ...check, conclusion: 'failure' }];
-  await assert.rejects(gh.merge(job, main), /test failed/);
+  const { failure } = await gh.advance(job, main);
+  assert.match(failure, /Godot QA[\s\S]*UI assertion failed/);
+  assert.doesNotMatch(failure, /fake value/);
   runs = [check];
-  await assert.rejects(gh.merge(job, main), /protected/);
+  await assert.rejects(gh.advance(job, main), /protected/);
   assert.equal(writes, 0);
   protectedMain = true;
-  assert.equal(await gh.merge(job, main), sha);
+  assert.deepEqual(await gh.advance(job, main), { merge: sha });
   assert.equal(writes, 1);
 });
 
@@ -101,7 +112,7 @@ test('imports recovery edits across unrelated histories only with a matching bas
   assert.throws(() => repo.workspace({ id: 'overlap', base: overlap }), /overlap changes/);
 });
 
-test('resumes after commit and ambiguous PR creation; tests, stacks and retargets exact commits', async t => {
+test('resumes after commit and ambiguous PR creation; repairs hosted failures and writes Done only after fetching the merge', async t => {
   const root = mkdtempSync(join(tmpdir(), 'draft-studio-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const g = (...args) => git(root, ...args).trim();
@@ -114,17 +125,16 @@ test('resumes after commit and ambiguous PR creation; tests, stacks and retarget
     id: `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`,
     identifier: `GAB-${n}`, title: `Game item ${n}`, url: `https://linear.app/team/issue/GAB-${n}`,
   });
-  const [parent, child, broken, independent] = [1, 2, 3, 4].map(issue);
-  const issueList = [parent];
+  const [parent, child] = [1, 2].map(issue);
+  const issueList = [child, parent];
   const attachments = new Map();
-  const blockers = new Map();
   const calls = [];
   const linear = {
     async *ready() { yield* issueList; },
-    async dependencies(id) { return id === child.id ? [parent] : []; },
-    async state(id, state) { calls.push([id, state]); },
-    async attach(id, url) { attachments.set(id, url); },
-    async blocker(id, reason) { blockers.set(id, reason); },
+    async dependencies(id) { return id === child.id && !attachments.has(parent.id) ? [parent] : []; },
+    async start(id) { calls.push(id); },
+    async integrated(id, url, sha) { attachments.set(id, { url, sha }); },
+    async blocker(id, reason) { assert.fail(`${id}: ${reason}`); },
   };
   const prs = [];
   let postCount = 0;
@@ -134,36 +144,38 @@ test('resumes after commit and ambiguous PR creation; tests, stacks and retarget
   let crash = true;
   const remote = new Map();
   const game = {
-    async edit(work, dir, idea) {
+    async edit(work, dir, idea, feedback) {
       edits++;
-      writeFileSync(join(work, `game-${idea.at(-1)}`), idea);
+      writeFileSync(join(work, `game-${idea.at(-1)}`), idea + feedback);
     },
     async validate(work) {
       validations++;
       if (validations === 1) throw new Error('Godot error');
-      if (git(work, 'status', '--short').includes('game-3')) throw new Error('Persistent Godot error');
       git(work, 'add', '.');
       return { tree: git(work, 'write-tree').trim() };
     },
   };
+  let confirmation;
+  let hostedFailed = false;
   const fetcher = async (input, options) => {
     const url = new URL(input);
     if (options.method === 'POST') {
       const { head, base, draft, body } = JSON.parse(options.body);
-      assert.equal(draft, true);
-      assert.match(body, /Visual quality is unverified/);
+      assert.equal(draft, undefined);
+      assert.equal(base, 'main');
+      assert.match(body, /Godot QA/);
       const pr = {
-        number: ++postCount, state: 'open', body, head: { ref: head, sha: remote.get(head) },
-        base: { ref: base }, draft, html_url: `https://github.com/owner/game/pull/${postCount}`,
+        number: ++postCount, state: 'open', body, head: { ref: head, repo: { full_name: 'owner/game' } },
+        base: { ref: base, repo: { full_name: 'owner/game' } }, draft, html_url: `https://github.com/owner/game/pull/${postCount}`,
       };
       prs.push(pr);
       if (postCount === 1) throw new Error('connection lost after PR creation');
-      return Response.json(pr);
     }
-    if (url.searchParams.has('head')) return Response.json(prs.filter(pr => `owner:${pr.head.ref}` === url.searchParams.get('head')));
-    const pr = prs[Number(url.pathname.split('/').at(-1)) - 1];
-    if (options.method === 'PATCH') pr.base.ref = JSON.parse(options.body).base;
-    return Response.json(pr);
+    const matching = prs.filter(pr => `owner:${pr.head.ref}` === url.searchParams.get('head'))
+      .map(pr => ({ ...pr, head: { ...pr.head, sha: remote.get(pr.head.ref) } }));
+    return Response.json(options.method === 'POST' ? {
+      ...prs.at(-1), head: { ...prs.at(-1).head, sha: remote.get(prs.at(-1).head.ref) },
+    } : matching);
   };
   function restart() {
     controller = new AbortController();
@@ -173,6 +185,7 @@ test('resumes after commit and ambiguous PR creation; tests, stacks and retarget
       ...repo, remoteTip: branch => remote.get(branch),
       push: async job => {
         assert.equal(g('rev-parse', `refs/heads/${job.branch}`), job.sha);
+        assert.equal(remote.get(job.branch), job.previous);
         remote.set(job.branch, job.sha);
       },
       commit: job => {
@@ -185,9 +198,17 @@ test('resumes after commit and ambiguous PR creation; tests, stacks and retarget
         return sha;
       },
     };
+    const gh = github('owner/game', 'github_pat_fixture', signal, fetcher);
+    gh.advance = async job => {
+      if (job.identifier !== parent.identifier) return;
+      if (!hostedFailed) {
+        hostedFailed = true;
+        return { failure: 'Repair hosted Godot failure.' };
+      }
+      return confirmation;
+    };
     return pipeline({
-      storage: journal(root), dir: root, git: adapters, github: github('owner/game', 'github_pat_fixture', signal, fetcher),
-      linear, game, signal, report: () => {},
+      storage: journal(root), dir: root, git: adapters, github: gh, linear, game, signal,
     });
   }
   let tick = restart();
@@ -201,21 +222,21 @@ test('resumes after commit and ambiguous PR creation; tests, stacks and retarget
   assert.equal(edits, 2);
   tick = restart();
   await tick(main);
-  assert.equal(journal(root).jobs()[0].sha, committed);
+  assert.equal(journal(root).jobs()[0].previous, committed);
   assert.equal(validations, 2);
   assert.equal(edits, 2);
   assert.equal(postCount, 1);
-  assert.equal(attachments.get(parent.id), prs[0].html_url);
-  assert.deepEqual(calls, [[parent.id, 'progress'], [parent.id, 'review']]);
-
-  issueList.push(child, broken, independent);
+  assert.equal(attachments.size, 0);
   await tick(main);
-  const childPR = prs.find(pr => pr.head.ref.startsWith('feature/GAB-2'));
-  assert.equal(childPR.base.ref, saved.branch);
-  assert.equal(g('diff', '--name-only', committed, childPR.head.sha), 'game-2');
-  assert.equal(prs.find(pr => pr.head.ref.startsWith('feature/GAB-4')).base.ref, 'main');
-  for (let i = 0; i < 5; i++) await tick(committed);
-  assert.equal(childPR.base.ref, 'main');
-  assert.equal(postCount, 3);
-  assert.match(blockers.get(broken.id), /after four checkpoints/);
+  const repaired = journal(root).jobs()[0].sha;
+  assert.equal(g('show', '-s', '--format=%P', repaired), committed);
+  assert.equal(postCount, 1);
+  confirmation = { merge: g('commit-tree', `${repaired}^{tree}`, '-p', main, '-p', repaired, '-m', 'merge') };
+  await tick(main);
+  assert.equal(attachments.size, 0);
+  await tick(confirmation.merge);
+  assert.deepEqual(attachments.get(parent.id), { url: prs[0].html_url, sha: confirmation.merge });
+  assert.deepEqual(calls, [parent.id, child.id]);
+  assert.equal(journal(root).jobs().find(job => job.id === child.id).base, confirmation.merge);
+  assert.equal(postCount, 2);
 });
