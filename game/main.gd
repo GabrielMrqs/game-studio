@@ -37,7 +37,9 @@ class RoomCanvas extends Control:
 const HUD_HEIGHT := 178.0
 const INK := Color("161e26")
 const BRASS := Color("b08d63")
+const Sound := preload("res://sfx.gd")
 
+var sfx := Sound.new()
 var room := "observatory"
 var has_lens := false
 var selected_lens := false
@@ -91,6 +93,11 @@ var pause_overlay: Control
 var pause_menu: VBoxContainer
 var pause_feedback: Label
 var paused_panel: Control
+var audio_panel: PanelContainer
+var audio_from: Control
+var audio_launcher: Button
+var sfx_slider: HSlider
+var sfx_mute: CheckButton
 var case_data := {
 	"number": "MR-014",
 	"description": "Case 01 — The Aurora Theatre Fire. Marina Azevedo reports a second emergency exit in the municipal registry that does not exist. Old photos show a door; inspection threatens closure.",
@@ -128,6 +135,7 @@ func _install_theme() -> void:
 
 func _ready() -> void:
 	_install_theme()
+	add_child(sfx)
 	var matte := ColorRect.new()
 	matte.color = Color("10151c")
 	matte.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -177,9 +185,9 @@ func _ready() -> void:
 	layout.add_child(choices)
 	var tools := HBoxContainer.new()
 	layout.add_child(tools)
-	inventory = _button(tools, "Inventory: empty", _select_lens)
-	_button(tools, "Case File", _open_case)
-	_button(tools, "Pause", _pause_game)
+	inventory = _button(tools, "Inventory: empty", _select_lens, "")
+	_button(tools, "Case File", _open_case, "")
+	_button(tools, "Pause", _pause_game, "")
 	_show_room("The observatory is quiet. Explore the room.")
 	hotspots.resized.connect(hotspots.layout_art)
 	document_panel = PanelContainer.new()
@@ -195,7 +203,7 @@ func _ready() -> void:
 	record.add_theme_font_size_override("font_size", 18)
 	record.text = "OBSERVATORY DELIVERY RECORD\n\nItem: Lamp oil, 2 tins\nRecipient: Observatory keeper\nDelivery address: 14 Harbour Road\nBilling address: 41 Harbour Road\n\nFiled by: M. Ellis"
 	document.add_child(record)
-	_button(document, "Close", _close_document)
+	_button(document, "Close", _close_document, "close")
 	document_panel.hide()
 	case_panel = PanelContainer.new()
 	case_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -212,7 +220,7 @@ func _ready() -> void:
 	case_text.add_theme_font_size_override("font_size", 14)
 	case_text.text = "CASE FILE: %s\n\nDescription: %s\n\nObjective: %s\n\nStatus: %s" % [case_data.number, case_data.description, case_data.objective, case_data.status]
 	case_layout.add_child(case_text)
-	_button(case_layout, "Close", _close_case)
+	_button(case_layout, "Close", _close_case, "close")
 	case_panel.hide()
 	intake_panel = PanelContainer.new()
 	intake_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -228,10 +236,7 @@ func _ready() -> void:
 	assignment.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	assignment.text = "CARTÓRIO DOS ESQUECIDOS — INTAKE, 2026\n\nCase 01 / MR-014 — The Aurora Theatre Fire\n\nMarina Azevedo reports that the municipal registry shows a second emergency exit at Teatro Aurora that does not exist. Old photos show a door; an inspection threatens to close the theatre.\n\nNext: review the case file and visit Teatro Aurora."
 	intake_layout.add_child(assignment)
-	_button(intake_layout, "Review Case File", func():
-		intake_panel.hide()
-		_open_case()
-	)
+	_button(intake_layout, "Review Case File", _review_case, "")
 	intake_panel.hide()
 	board_panel = PanelContainer.new()
 	board_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -262,6 +267,9 @@ func _ready() -> void:
 				card.add_item(option)
 			card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			row.add_child(card)
+			sfx.wire_hover(card, "hover")
+			card.pressed.connect(sfx.action.bind("confirm"))
+			card.item_selected.connect(func(_index: int): sfx.action("confirm"))
 			cards.append(card)
 		board_cards.append(cards)
 	board_feedback = Label.new()
@@ -269,14 +277,17 @@ func _ready() -> void:
 	board.add_child(board_feedback)
 	var board_actions := HBoxContainer.new()
 	board.add_child(board_actions)
-	_button(board_actions, "Check sequences", _check_reconstruction)
-	_button(board_actions, "Close", _close_board)
+	_button(board_actions, "Check sequences", _check_reconstruction, "")
+	_button(board_actions, "Close", _close_board, "close")
 	board_panel.hide()
 	var menu_panel := PanelContainer.new()
 	menu_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	add_child(menu_panel)
 	menu = VBoxContainer.new()
 	menu_panel.add_child(menu)
+	audio_launcher = _button(self, "Audio Settings", _open_audio.bind(menu_panel), "open")
+	audio_launcher.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT, Control.PRESET_MODE_MINSIZE, 18)
+	menu_panel.visibility_changed.connect(func(): audio_launcher.visible = menu_panel.visible)
 	pause_overlay = Control.new()
 	pause_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	pause_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -294,18 +305,90 @@ func _ready() -> void:
 	var pause_heading := Label.new()
 	pause_heading.text = "Paused"
 	pause_menu.add_child(pause_heading)
-	_button(pause_menu, "Resume", _resume_game)
+	_button(pause_menu, "Resume", _resume_game, "")
 	_button(pause_menu, "Save Game", _pause_save)
-	_button(pause_menu, "Return to Main Menu", _pause_main_menu)
+	_button(pause_menu, "Audio Settings", _open_audio.bind(pause_overlay), "open")
+	_button(pause_menu, "Return to Main Menu", _pause_main_menu, "back")
 	pause_feedback = Label.new()
 	pause_menu.add_child(pause_feedback)
 	pause_overlay.hide()
+	_build_audio_panel()
 	_show_menu()
+
+
+func _build_audio_panel() -> void:
+	audio_panel = PanelContainer.new()
+	audio_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	audio_panel.offset_left = -170
+	audio_panel.offset_right = 170
+	audio_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	add_child(audio_panel)
+	var layout := VBoxContainer.new()
+	audio_panel.add_child(layout)
+	var heading := Label.new()
+	heading.text = "Audio Settings"
+	heading.add_theme_font_size_override("font_size", 20)
+	layout.add_child(heading)
+	var level_readout := Label.new()
+	layout.add_child(level_readout)
+	sfx_slider = HSlider.new()
+	sfx_slider.max_value = 100
+	sfx_slider.step = 1
+	sfx_slider.value = sfx.level * 100.0
+	layout.add_child(sfx_slider)
+	sfx_mute = CheckButton.new()
+	sfx_mute.text = "Mute sound effects"
+	sfx_mute.button_pressed = sfx.muted
+	layout.add_child(sfx_mute)
+	sfx.wire_hover(sfx_mute, "hover")
+	var update_level := func(value: float):
+		level_readout.text = "Sound effects: %d%%" % int(value)
+	update_level.call(sfx_slider.value)
+	sfx_slider.value_changed.connect(func(value: float):
+		update_level.call(value)
+		sfx.set_mix(value / 100.0, sfx.muted)
+	)
+	sfx_slider.drag_ended.connect(func(changed: bool):
+		if changed:
+			sfx.action("confirm")
+	)
+	sfx_mute.toggled.connect(func(enabled: bool):
+		sfx.set_mix(sfx.level, enabled)
+		sfx.save_settings()
+		sfx.action("confirm")
+	)
+	_button(layout, "Back", _close_audio, "")
+	audio_panel.hide()
+
+
+func _open_audio(origin: Control) -> void:
+	audio_from = origin
+	origin.hide()
+	audio_panel.show()
+	sfx_slider.grab_focus()
+
+
+func _close_audio() -> void:
+	sfx.save_settings()
+	sfx.action("back")
+	audio_panel.hide()
+	audio_from.show()
+	if audio_from == pause_overlay:
+		pause_menu.get_child(1).grab_focus()
+	else:
+		audio_launcher.grab_focus()
+
+
+func _review_case() -> void:
+	intake_panel.hide()
+	_open_case()
 
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
-		if pause_overlay.visible:
+		if audio_panel.visible:
+			_close_audio()
+		elif pause_overlay.visible:
 			_resume_game()
 		elif not menu.get_parent().visible:
 			_pause_game()
@@ -315,6 +398,7 @@ func _input(event: InputEvent) -> void:
 
 
 func _pause_game() -> void:
+	sfx.action("confirm")
 	paused_panel = intake_panel if intake_panel.visible else document_panel if document_panel.visible else case_panel if case_panel.visible else board_panel if board_panel.visible else gameplay_panel
 	paused_panel.hide()
 	pause_feedback.text = ""
@@ -323,6 +407,7 @@ func _pause_game() -> void:
 
 
 func _resume_game() -> void:
+	sfx.action("back")
 	pause_overlay.hide()
 	paused_panel.show()
 
@@ -351,9 +436,9 @@ func _show_menu() -> void:
 	heading.text = "O Cartório dos Esquecidos"
 	heading.add_theme_font_size_override("font_size", 26)
 	menu.add_child(heading)
-	_button(menu, "New Game", _new_game)
+	_button(menu, "New Game", _new_game, "open")
 	_button(menu, "Continue", _show_saves)
-	_button(menu, "Exit", func(): get_tree().quit())
+	_button(menu, "Exit", func(): get_tree().quit(), "back")
 
 
 func _new_game() -> void:
@@ -404,7 +489,7 @@ func _show_saves() -> void:
 		menu.add_child(empty)
 	for filename in saves:
 		_button(menu, filename, _continue_save.bind(save_directory.path_join(filename)))
-	_button(menu, "Back", _show_menu)
+	_button(menu, "Back", _show_menu, "back")
 
 
 func _continue_save(path: String) -> void:
@@ -421,11 +506,14 @@ func _continue_save(path: String) -> void:
 		menu.add_child(error)
 
 
-func _button(parent: Node, text: String, action: Callable) -> Button:
+func _button(parent: Node, text: String, action: Callable, cue := "confirm") -> Button:
 	var button := Button.new()
 	button.text = text
+	if not cue.is_empty():
+		button.pressed.connect(sfx.action.bind(cue))
 	button.pressed.connect(action)
 	parent.add_child(button)
+	sfx.wire_hover(button, "target" if parent == hotspots else "hover")
 	if parent == hotspots:
 		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 		button.tooltip_text = text
@@ -451,8 +539,8 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 	return button
 
 
-func _scene_object(text: String, action: Callable, region: Rect2) -> void:
-	var button := _button(hotspots, text, action)
+func _scene_object(text: String, action: Callable, region: Rect2, cue := "") -> void:
+	var button := _button(hotspots, text, action, cue)
 	button.set_meta("art_region", region)
 
 
@@ -481,7 +569,7 @@ func _show_room(text: String) -> void:
 	if room == "observatory":
 		_scene_object("Examine desk", _desk, Rect2(60, 367, 335, 104))
 		_scene_object("Inspect delivery record", _open_document, Rect2(220, 320, 169, 47))
-		_scene_object("Talk to keeper", _keeper, Rect2(422, 119, 160, 219))
+		_scene_object("Talk to keeper", _keeper, Rect2(422, 119, 160, 219), "confirm")
 		_scene_object("Lantern room →", func(): _transition("lantern"), Rect2(596, 115, 150, 220))
 		_scene_object("Teatro Aurora →", func(): _transition("aurora"), Rect2(775, 44, 146, 356))
 	elif room == "lantern":
@@ -491,11 +579,11 @@ func _show_room(text: String) -> void:
 		_scene_object("Wall and plan", func(): _aurora_evidence(0), Rect2(398, 130, 115, 185))
 		_scene_object("Old door photos", func(): _aurora_evidence(1), Rect2(514, 133, 76, 88))
 		_scene_object("Building records", func(): _aurora_evidence(2), Rect2(613, 310, 164, 63))
-		_scene_object("Interviews", _interviews, Rect2(815, 136, 122, 297))
-		_scene_object("Evidence shelf", _evidence_shelf, Rect2(133, 295, 182, 137))
-		_scene_object("Reconstruction board", _open_board, Rect2(640, 88, 167, 158))
+		_scene_object("Interviews", _interviews, Rect2(815, 136, 122, 297), "confirm")
+		_scene_object("Evidence shelf", _evidence_shelf, Rect2(133, 295, 182, 137), "confirm")
+		_scene_object("Reconstruction board", _open_board, Rect2(640, 88, 167, 158), "open")
 		if reconstruction_solved == [true, true] and rectification == "":
-			_scene_object("Cartório rectification", _rectification_choice, Rect2(450, 351, 139, 50))
+			_scene_object("Cartório rectification", _rectification_choice, Rect2(450, 351, 139, 50), "confirm")
 		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(10, 89, 94, 317))
 	hotspots.present(room, lit)
 
@@ -512,6 +600,7 @@ func _open_board() -> void:
 
 
 func _check_reconstruction() -> void:
+	var before := reconstruction_solved.duplicate()
 	var feedback := []
 	var current_valid := true
 	for lane in range(2):
@@ -535,6 +624,7 @@ func _check_reconstruction() -> void:
 	if reconstruction_solved == [true, true] and current_valid:
 		feedback.append("Contradiction established: both incompatible sequences are reconstructed. Its origin remains unknown.")
 	board_feedback.text = "\n".join(feedback)
+	sfx.action("clue" if reconstruction_solved != before else "confirm" if current_valid else "result")
 
 
 func _close_board() -> void:
@@ -548,8 +638,8 @@ func _rectification_choice() -> void:
 		return
 	_clear(choices)
 	message.text = "Cartório rectification: which incompatible continuity will be officially maintained? Recognized: Jonas rescues Paula and their relationship survives, but Eva and the door are erased. Alternative: Eva rescues Paula and Jonas takes a different route, implicating the bus accident and Ricardo's records. Neither choice is clean."
-	_button(choices, "Maintain recognized", _rectify.bind("recognized"))
-	_button(choices, "Maintain alternative", _rectify.bind("alternative"))
+	_button(choices, "Maintain recognized", _rectify.bind("recognized"), "clue")
+	_button(choices, "Maintain alternative", _rectify.bind("alternative"), "clue")
 
 
 func _rectify(choice: String) -> void:
@@ -563,14 +653,13 @@ func _evidence_shelf() -> void:
 	_clear(choices)
 	message.text = "Evidence shelf: choose an item to inspect."
 	for i in range(EVIDENCE.size()):
-		_button(choices, EVIDENCE[i][0], _inspect_evidence.bind(i))
+		_button(choices, EVIDENCE[i][0], _inspect_evidence.bind(i), "")
 
 
 func _inspect_evidence(index: int) -> void:
+	var discovered: bool = not evidence_flags[index]
 	evidence_flags[index] = true
-	document_panel.get_child(0).get_child(0).text = EVIDENCE[index][1]
-	gameplay_panel.hide()
-	document_panel.show()
+	_present_document(EVIDENCE[index][1], discovered)
 
 
 func _interviews() -> void:
@@ -584,12 +673,13 @@ func _interview(person: int) -> void:
 	_clear(choices)
 	var account: Array = INTERVIEWS[person]
 	message.text = "[%s — %s]\nWhat would you like to ask?" % [account[0], account[1]]
-	_button(choices, account[2], _statement.bind(person * 2))
-	_button(choices, account[4], _statement.bind(person * 2 + 1))
-	_button(choices, "Other people", _interviews)
+	_button(choices, account[2], _statement.bind(person * 2), "")
+	_button(choices, account[4], _statement.bind(person * 2 + 1), "")
+	_button(choices, "Other people", _interviews, "back")
 
 
 func _statement(index: int) -> void:
+	sfx.action("confirm" if interview_flags[index] else "clue")
 	interview_flags[index] = true
 	var account: Array = INTERVIEWS[index / 2]
 	message.text = "[%s — %s]\n%s" % [account[0], account[1], account[3 if index % 2 == 0 else 5]]
@@ -601,14 +691,19 @@ func _aurora_evidence(index: int) -> void:
 		"AURORA — OLD DOOR PHOTOGRAPHS\n\nOld photographs show a second emergency door in the corridor, where the present wall has no opening.",
 		"AURORA — BUILDING RECORDS\n\nThe available building records contain no documented masonry work closing a door. A fragment suggests Eva Azevedo was Marina's sister, though Eva is absent from official records."
 	]
+	var discovered: bool = not aurora_clues[index]
 	aurora_clues[index] = true
-	document_panel.get_child(0).get_child(0).text = notes[index]
-	gameplay_panel.hide()
-	document_panel.show()
+	_present_document(notes[index], discovered)
 
 
 func _open_document() -> void:
-	document_panel.get_child(0).get_child(0).text = "OBSERVATORY DELIVERY RECORD\n\nItem: Lamp oil, 2 tins\nRecipient: Observatory keeper\nDelivery address: 14 Harbour Road\nBilling address: 41 Harbour Road\n\nFiled by: M. Ellis"
+	_present_document("OBSERVATORY DELIVERY RECORD\n\nItem: Lamp oil, 2 tins\nRecipient: Observatory keeper\nDelivery address: 14 Harbour Road\nBilling address: 41 Harbour Road\n\nFiled by: M. Ellis")
+
+
+func _present_document(text: String, discovered := false) -> void:
+	# A discovery cue includes the paper attack: never layer it with "open".
+	sfx.action("clue" if discovered else "open")
+	document_panel.get_child(0).get_child(0).text = text
 	gameplay_panel.hide()
 	document_panel.show()
 
@@ -619,6 +714,7 @@ func _close_document() -> void:
 
 
 func _open_case() -> void:
+	sfx.action("open")
 	var text: String = "CASE FILE: %s\n\nDescription: %s\n\nObjective: %s\n\nStatus: %s" % [case_data.number, case_data.description, case_data.objective, case_data.status]
 	if rectification != "":
 		text = text.replace("Status: Open", "Status: Closed — rectified")
@@ -657,8 +753,10 @@ func _close_case() -> void:
 
 func _desk() -> void:
 	if has_lens or lit:
+		sfx.action("confirm")
 		_show_room("The desk holds a notebook full of star charts.")
 	else:
+		sfx.action("clue")
 		has_lens = true
 		_show_room("You found a glass lens. Select it in your inventory to use it.")
 
@@ -681,19 +779,23 @@ func _answer(text: String) -> void:
 func _select_lens() -> void:
 	if has_lens:
 		selected_lens = not selected_lens
+		sfx.action("open" if selected_lens else "close")
 		_show_room("Lens selected. Use it on a hotspot." if selected_lens else "Lens put away.")
 	else:
+		sfx.action("result")
 		_clear(choices)
 		message.text = "Your inventory is empty."
 
 
 func _transition(destination: String) -> void:
+	sfx.action("door")
 	room = destination
 	selected_lens = false
 	_show_room("You enter the lantern room." if room == "lantern" else "You arrive at Teatro Aurora. The corridor is quiet." if room == "aurora" else "You return to the observatory.")
 
 
 func _lantern() -> void:
+	sfx.action("confirm" if lit else "clue" if has_lens and selected_lens else "result")
 	if lit:
 		_show_room("The lantern shines across the water. You did it!")
 	elif has_lens and selected_lens:
