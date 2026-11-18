@@ -3,7 +3,8 @@
 Put an idea in a Linear issue labeled `ai-game-studio` and move it to **Ready**.
 The watcher processes one issue at a time, after any Linear prerequisites are
 Done. It starts from current GitHub `main`, runs OpenCode with `openai/gpt-6.2-sol`
-in the existing game-only sandbox, then runs Godot smoke, regression, UI and
+in the existing game-only sandbox with up to ten minutes per edit attempt,
+then runs Godot smoke, regression, UI and
 graphical screenshot checks. Those checks test behavior and screenshot integrity,
 not subjective art quality.
 

@@ -211,12 +211,12 @@ async function processIdea(config, linear) {
   return true;
 }
 
-async function editGame(home, idea, handoff) {
+async function editGame(home, idea, handoff, budget = '240s') {
   const agentConfig = JSON.parse(readFileSync(join(root, 'studio/once-opencode.json'), 'utf8'));
   agentConfig.permissions = [...agentConfig.permissions.filter(rule => rule.action !== 'edit'), ...editRules];
   const policy = join(logs, 'opencode.json');
   writeFileSync(policy, JSON.stringify(agentConfig), { flag: 'wx', mode: 0o600 });
-  const agent = await run('agent.jsonl', 'flock', ['-n', '-F', home, 'timeout', ...sandbox('240s',
+  const agent = await run('agent.jsonl', 'flock', ['-n', '-F', home, 'timeout', ...sandbox(budget,
     '--share-net', '--ro-bind', '/etc/ssl', '/etc/ssl',
     '--ro-bind', '/etc/resolv.conf', '/etc/resolv.conf', '--ro-bind', '/etc/hosts', '/etc/hosts',
     '--bind', home, '/home/agent',
@@ -246,8 +246,9 @@ export function gameRunner(config) {
   return {
     async edit(worktree, dir, idea, feedback) {
       [work, logs] = [worktree, dir];
-      await editGame(home, idea, 'Continue from files already on disk. Work in small, coherent edits. ' +
-        'The runner validates and publishes pull requests. ' + feedback);
+      await editGame(home, idea, 'Continue from files already on disk. Start saving coherent edits early; ' +
+        'save each part before moving on, so a retry can continue. The runner validates and publishes pull requests. ' +
+        feedback, '600s');
     },
     async validate(worktree, dir, base) {
       [work, logs] = [worktree, dir];
