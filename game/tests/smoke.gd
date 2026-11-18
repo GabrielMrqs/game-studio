@@ -16,7 +16,7 @@ func check(condition: bool, description: String) -> void:
 
 func press(container: Node, text: String) -> void:
 	for button in container.get_children():
-		if button.text == text:
+		if button is Button and button.text == text:
 			button.pressed.emit()
 			return
 	check(false, "button exists: " + text)
@@ -46,12 +46,121 @@ func check_art_layout(asset: String, anchors: Dictionary) -> void:
 	check(canvas.get_global_rect().encloses(bounds) and bounds.get_center().distance_to(canvas.get_global_rect().get_center()) < 1.0, asset + " illustration is centered and uncropped")
 	for caption in anchors:
 		var matched := false
+		var hits := 0
 		var art_point: Vector2 = anchors[caption]
-		for button in canvas.get_children():
-			if button.text == caption:
-				matched = button.get_global_rect().has_point(bounds.position + art_point * (bounds.size / Vector2(960, 500)))
-				break
+		for child in canvas.get_children():
+			var button := child as Button
+			if button and button.call("_has_point", bounds.position + art_point * (bounds.size / Vector2(960, 500)) - button.global_position):
+				hits += 1
+				matched = matched or button.text == caption
 		check(matched, asset + " hotspot aligns with painted object: " + caption)
+		check(hits == 1, asset + " object center maps to a single action: " + caption)
+
+
+func aim_at_art(art_point: Vector2) -> Vector2:
+	var picture: TextureRect = game.hotspots.picture
+	var point := picture.get_global_transform_with_canvas() * (art_point * picture.size / Vector2(960, 500))
+	var motion := InputEventMouseMotion.new()
+	motion.position = point
+	motion.global_position = point
+	root.push_input(motion, true)
+	return point
+
+
+func click_art(art_point: Vector2) -> void:
+	var point := aim_at_art(art_point)
+	for down in [true, false]:
+		var click := InputEventMouseButton.new()
+		click.button_index = MOUSE_BUTTON_LEFT
+		click.pressed = down
+		click.button_mask = MOUSE_BUTTON_MASK_LEFT if down else 0
+		click.position = point
+		click.global_position = point
+		root.push_input(click, true)
+
+
+func check_scene_input() -> void:
+	game = load("res://main.tscn").instantiate()
+	root.add_child(game)
+	press(game.menu, "New Game")
+	press(game.intake_panel.get_child(0), "Review Case File")
+	press(game.case_panel.get_child(0), "Close")
+	await process_frame
+	var originally: Vector2 = game.hotspots.size
+	click_art(Vector2(781, 60)) # Inside the exit's bounds, but on the wall above its sloping lintel.
+	check(game.room == "observatory" and game.indicated_target == null, "bare wall near the office exit neither hovers nor navigates")
+	aim_at_art(Vector2(503, 267))
+	check("Talk to keeper" in game.room_label.text and game.hotspots.cue == game.indicated_target, "pointer hover identifies the painted keeper in the room and HUD")
+	click_art(Vector2(503, 267))
+	check(game.choices.get_child_count() == 2 and "Keeper:" in game.message.text, "clicking the keeper starts their existing dialogue")
+	click_art(Vector2(296, 349))
+	check(game.document_panel.visible and not game.has_lens and game.hotspots.cue == null, "delivery paper opens without triggering the desk and clears scene feedback")
+	press(game.document_panel.get_child(0), "Close")
+	var exit_presses := [0]
+	for target in game.hotspots.get_children():
+		if target.text == "Teatro Aurora →":
+			target.pressed.connect(func(): exit_presses[0] += 1)
+	click_art(Vector2(852, 202))
+	check(exit_presses[0] == 1 and game.room == "aurora" and not game.document_panel.visible, "office exit makes exactly one transition")
+	game.hotspots.size = originally * Vector2(.81, .9)
+	await process_frame
+	check_art_layout("aurora", {"Talk to Marina": Vector2(878, 264), "Talk to Paula": Vector2(209, 220), "Talk to Jonas": Vector2(294, 219), "Talk to Augusto": Vector2(354, 259), "19:42 call": Vector2(205, 317), "Eva's traces": Vector2(273, 323), "Rescue photo": Vector2(594, 345), "Bus and accident records": Vector2(639, 368)})
+	var witnesses := {"Paula": Vector2(209, 220), "Jonas": Vector2(294, 219), "Augusto": Vector2(354, 259), "Marina": Vector2(878, 264)}
+	for witness in witnesses:
+		click_art(witnesses[witness])
+		check(("[%s —" % witness) in game.message.text and game.choices.get_child_count() == 3, "resized witness opens the correct interview: " + witness)
+	click_art(Vector2(203, 293)) # Gap between Paula's shoes and the telephone.
+	check(not game.document_panel.visible and game.indicated_target == null, "gap between witness and clue remains inactive")
+	# Exercise the original alignment sample through Godot's GUI, not just the polygon check.
+	aim_at_art(Vector2(213, 344))
+	check(game.indicated_target != null and game.indicated_target.text == "Evidence shelf", "painted upper shelf plate owns the regression coordinate after resize")
+	click_art(Vector2(213, 344))
+	check(game.choices.get_child_count() == 4 and not game.document_panel.visible and game.evidence_flags == [false, false, false, false], "clicking the upper shelf plate opens the index without collecting a clue")
+	aim_at_art(Vector2(222, 349))
+	check(game.indicated_target != null and game.indicated_target.text == "Evidence shelf", "resized trolley plaque hovers independently of the evidence above it")
+	click_art(Vector2(240, 355)) # The painted lower edge is clickable too.
+	check(game.room == "aurora" and game.choices.get_child_count() == 4 and "Evidence shelf:" in game.message.text and not game.document_panel.visible and game.evidence_flags == [false, false, false, false], "clicking the shelf index only opens its existing item selector")
+	click_art(Vector2(222, 365)) # Bare space just below the hanging index.
+	check(game.indicated_target == null and not game.document_panel.visible, "space below the index does not expose a hidden shelf hotspot")
+	var props := [Vector2(205, 317), Vector2(273, 323), Vector2(594, 345), Vector2(639, 368)]
+	for i in range(props.size()):
+		click_art(props[i])
+		var expected := [false, false, false, false]
+		for j in range(i + 1):
+			expected[j] = true
+		check(game.document_panel.visible and game.evidence_flags == expected, "clicking prop %d inspects only its evidence" % i)
+		click_art(Vector2(48, 271))
+		check(game.room == "aurora", "an open document blocks the exit behind it")
+		press(game.document_panel.get_child(0), "Close")
+	var instrument_case := Vector2(207, 384)
+	check_art_layout("aurora", {"Eva's traces": instrument_case})
+	aim_at_art(instrument_case)
+	check(game.indicated_target != null and game.indicated_target.text == "Eva's traces" and game.hotspots.cue_anchor == instrument_case, "the resized instrument case shows feedback on the case itself")
+	click_art(instrument_case)
+	check(game.document_panel.visible and "EVA'S TRACES" in game.document_panel.get_child(0).get_child(0).text and game.evidence_flags == [true, true, true, true], "the case reopens the shared traces document without changing evidence")
+	press(game.document_panel.get_child(0), "Close")
+	var form_point := Vector2(510, 375)
+	var surface: ShaderMaterial = game.hotspots.picture.material
+	click_art(form_point)
+	check(not surface.get_shader_parameter("show_form") and game.indicated_target == null, "the empty blotter has no secret hotspot")
+	click_art(Vector2(731, 169))
+	check(game.board_panel.visible, "pointer opens the reconstruction board")
+	for lane in range(2):
+		for card in game.board_cards[lane]:
+			card.select(lane + 1)
+	var board_actions: Node = game.board_feedback.get_parent().get_child(game.board_feedback.get_index() + 1)
+	press(board_actions, "Check sequences")
+	press(board_actions, "Close")
+	check(surface.get_shader_parameter("show_form"), "closing the solved board places the rectification sheet on the desk")
+	check_art_layout("aurora", {"Cartório rectification": form_point})
+	click_art(form_point)
+	check(game.choices.get_child_count() == 2 and "Cartório rectification" in game.message.text, "the visible sheet starts the existing decision")
+	press(game.choices, "Maintain recognized")
+	click_art(form_point)
+	check(not surface.get_shader_parameter("show_form") and game.indicated_target == null and game.rectification == "recognized", "filing removes the sheet and its hotspot together")
+	click_art(Vector2(48, 271))
+	check(game.room == "observatory", "resized exit returns to the office")
+	game.free()
 
 
 func check_audio() -> void:
@@ -292,7 +401,7 @@ func run_test() -> void:
 	game.hotspots.size = scene_size
 	press(game.hotspots, "Teatro Aurora →")
 	check(game.room == "aurora" and game.hotspots.get_child(0).text == "Wall and plan", "scene doorway replaces office targets with Aurora targets")
-	check_art_layout("aurora", {"Wall and plan": Vector2(448, 176), "Old door photos": Vector2(550, 158), "Building records": Vector2(681, 333), "Evidence shelf": Vector2(205, 317), "← Observatory": Vector2(53, 271)})
+	check_art_layout("aurora", {"Wall and plan": Vector2(448, 176), "Old door photos": Vector2(550, 158), "Building records": Vector2(681, 333), "Evidence shelf": Vector2(213, 344), "19:42 call": Vector2(205, 317), "← Observatory": Vector2(53, 271)})
 	press(game.hotspots, "Old door photos")
 	check(game.aurora_clues[1] and game.document_panel.visible, "scene photo opens and records its clue")
 	press(game.document_panel.get_child(0), "Close")
@@ -551,6 +660,7 @@ func run_test() -> void:
 	game._new_game()
 	check(game.rectification == "" and game.reconstruction_solved == [false, false] and game.intake_panel.visible, "new game resets the completed case for replay")
 	game.free()
+	await check_scene_input()
 	check_audio()
 	if failures == 0:
 		print("PASS: dialogue, rooms, hotspots, inventory, puzzle, save/load and SFX")

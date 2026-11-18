@@ -1,22 +1,63 @@
 extends Control
 
+class SceneTarget extends Button:
+	var silhouettes: Array[PackedVector2Array] = []
+	var anchors := PackedVector2Array()
+	var art_bounds := Rect2()
+	var art_scale := 0.0
+
+	func set_silhouette(points: Array, anchor: Vector2) -> void:
+		art_bounds = Rect2(Vector2(points[0], points[1]), Vector2.ZERO)
+		add_silhouette(points, anchor)
+
+	func add_silhouette(points: Array, anchor: Vector2) -> void:
+		var shape := PackedVector2Array()
+		for i in range(0, points.size(), 2):
+			var point := Vector2(points[i], points[i + 1])
+			shape.append(point)
+			art_bounds = art_bounds.expand(point)
+		silhouettes.append(shape)
+		anchors.append(anchor)
+
+	func fit(origin: Vector2, scale_factor: float) -> void:
+		art_scale = scale_factor
+		position = origin + art_bounds.position * art_scale
+		size = art_bounds.size * art_scale
+
+	func _has_point(point: Vector2) -> bool:
+		return silhouette_at(point) != -1
+
+	func silhouette_at(point: Vector2) -> int:
+		if art_scale <= 0.0:
+			return -1
+		var art_point := point / art_scale + art_bounds.position
+		for i in range(silhouettes.size()):
+			if Geometry2D.is_point_in_polygon(art_point, silhouettes[i]):
+				return i
+		return -1
+
+
 class RoomCanvas extends Control:
 	const ART := {
 		"observatory": preload("res://art/office.svg"),
 		"aurora": preload("res://art/aurora.svg"),
 		"lantern": preload("res://art/lantern.svg")
 	}
-	# Hotspot rectangles are authored in this shared illustration coordinate space.
+	const RECTIFICATION_FORM := preload("res://art/form.svg")
+	# Curated silhouettes and reticles share the uncropped illustration coordinates.
 	const ART_SIZE := Vector2(960, 500)
 	var picture: TextureRect
 	var frame: Panel
 	var art_rect := Rect2()
 	var art_scale := 1.0
+	var cue: SceneTarget
+	var cue_anchor := Vector2.ZERO
 
-	func present(room_id: String, lit: bool) -> void:
+	func present(room_id: String, lit: bool, show_form := false) -> void:
 		picture.texture = ART[room_id]
 		var surface := picture.material as ShaderMaterial
 		surface.set_shader_parameter("lit", room_id == "lantern" and lit)
+		surface.set_shader_parameter("show_form", room_id == "aurora" and show_form)
 		layout_art()
 
 	func layout_art() -> void:
@@ -29,10 +70,39 @@ class RoomCanvas extends Control:
 		frame.position = picture.position - Vector2(2, 2)
 		frame.size = picture.size + Vector2(4, 4)
 		for target in get_children():
-			var button := target as Button
-			var source: Rect2 = button.get_meta("art_region")
-			button.position = art_rect.position + source.position * art_scale
-			button.size = source.size * art_scale
+			var button := target as SceneTarget
+			button.fit(art_rect.position, art_scale)
+		queue_redraw()
+
+	func _draw() -> void:
+		if not is_instance_valid(cue) or art_scale <= 0.0:
+			return
+		var center := art_rect.position + cue_anchor * art_scale
+		var radius := clampf(12.0 * art_scale, 5.0, 14.0)
+		var edge := Color("ffe0a3")
+		var shade := Color("171e28")
+		draw_circle(center, radius + 5.0, Color(edge, .10), true, -1.0, true)
+		draw_circle(center, radius + 1.0, Color(shade, .55), true, -1.0, true)
+		for quadrant in range(4):
+			var angle: float = quadrant * TAU / 4.0
+			draw_arc(center, radius, angle + .16, angle + TAU / 4.0 - .16, 8, edge, 1.4, true)
+		draw_circle(center, 1.6, edge, true, -1.0, true)
+		# Draw the caption on the canvas, not the button: it can float beyond small
+		# props without becoming another mouse target or spilling outside the art.
+		var font := get_theme_default_font()
+		const FONT_SIZE := 13
+		var width := ceilf(font.get_string_size(cue.text, HORIZONTAL_ALIGNMENT_LEFT, -1, FONT_SIZE).x) + 16.0
+		if width + 8.0 > art_rect.size.x or art_rect.size.y < 68.0:
+			return
+		var inner := art_rect.grow(-4.0)
+		var x := clampf(center.x - width * .5, inner.position.x, inner.end.x - width)
+		var y := center.y - radius - 30.0
+		if y < inner.position.y:
+			y = center.y + radius + 8.0
+		var tag := Rect2(x, clampf(y, inner.position.y, inner.end.y - 22.0), width, 22.0)
+		draw_rect(tag, Color(shade, .94))
+		draw_line(tag.position + Vector2(0, 22), tag.end, edge, 1.0)
+		draw_string(font, tag.position + Vector2(8, 15), cue.text, HORIZONTAL_ALIGNMENT_LEFT, -1.0, FONT_SIZE, edge)
 
 const HUD_HEIGHT := 178.0
 const INK := Color("161e26")
@@ -81,6 +151,7 @@ var save_directory := "user://"
 var message: Label
 var title: Label
 var room_label: Label
+var indicated_target: SceneTarget
 var inventory: Button
 var hotspots: RoomCanvas
 var choices: HBoxContainer
@@ -151,6 +222,7 @@ func _ready() -> void:
 	hotspots.picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var art_material := ShaderMaterial.new()
 	art_material.shader = preload("res://art/paper.gdshader")
+	art_material.set_shader_parameter("form", RoomCanvas.RECTIFICATION_FORM)
 	hotspots.picture.material = art_material
 	add_child(hotspots.picture)
 	hotspots.clip_contents = true
@@ -508,45 +580,70 @@ func _continue_save(path: String) -> void:
 
 func _button(parent: Node, text: String, action: Callable, cue := "confirm") -> Button:
 	var button := Button.new()
+	_wire_button(button, parent, text, action, cue)
+	return button
+
+
+func _wire_button(button: Button, parent: Node, text: String, action: Callable, cue: String) -> void:
 	button.text = text
 	if not cue.is_empty():
 		button.pressed.connect(sfx.action.bind(cue))
 	button.pressed.connect(action)
 	parent.add_child(button)
 	sfx.wire_hover(button, "target" if parent == hotspots else "hover")
-	if parent == hotspots:
-		button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		button.tooltip_text = text
-		var invisible := StyleBoxEmpty.new()
-		var highlight := StyleBoxFlat.new()
-		highlight.bg_color = Color(1, 0.88, 0.69, 0.06)
-		highlight.border_color = Color("e8c997")
-		highlight.set_border_width_all(2)
-		var focused := highlight.duplicate() as StyleBoxFlat
-		focused.bg_color = Color.TRANSPARENT
-		button.add_theme_stylebox_override("normal", invisible)
-		button.add_theme_stylebox_override("hover", highlight)
-		button.add_theme_stylebox_override("pressed", highlight)
-		button.add_theme_stylebox_override("hover_pressed", highlight)
-		button.add_theme_stylebox_override("focus", focused)
-		button.add_theme_font_size_override("font_size", 1)
-		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
-			button.add_theme_color_override(state, Color.TRANSPARENT)
-		button.mouse_entered.connect(func(): room_label.text = _room_name() + " — " + text)
-		button.mouse_exited.connect(func(): room_label.text = _room_name())
-		button.focus_entered.connect(func(): room_label.text = _room_name() + " — " + text)
-		button.focus_exited.connect(func(): room_label.text = _room_name())
+
+
+func _scene_object(text: String, action: Callable, points: Array, anchor: Vector2, cue := "") -> SceneTarget:
+	var button := SceneTarget.new()
+	button.set_silhouette(points, anchor)
+	button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	# Keep a real button for tab/accept and assistive text. The canvas draws feedback.
+	var invisible := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
+		button.add_theme_stylebox_override(state, invisible)
+	button.add_theme_font_size_override("font_size", 1)
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_CHAR
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color", "font_disabled_color"]:
+		button.add_theme_color_override(state, Color.TRANSPARENT)
+	_wire_button(button, hotspots, text, action, cue)
+	button.mouse_entered.connect(_indicate.bind(button))
+	button.focus_entered.connect(_indicate.bind(button))
+	button.mouse_exited.connect(_unindicate.bind(button))
+	button.focus_exited.connect(_unindicate.bind(button))
+	button.gui_input.connect(_track_target_pointer.bind(button))
 	return button
 
 
-func _scene_object(text: String, action: Callable, region: Rect2, cue := "") -> void:
-	var button := _button(hotspots, text, action, cue)
-	button.set_meta("art_region", region)
+func _track_target_pointer(event: InputEvent, target: SceneTarget) -> void:
+	if event is InputEventMouseMotion and indicated_target == target and target.silhouettes.size() > 1:
+		var part := target.silhouette_at(event.position)
+		if part != -1 and hotspots.cue_anchor != target.anchors[part]:
+			hotspots.cue_anchor = target.anchors[part]
+			hotspots.queue_redraw()
+
+
+func _indicate(target: SceneTarget) -> void:
+	if target and not target.is_visible_in_tree():
+		return
+	indicated_target = target
+	hotspots.cue = target
+	hotspots.cue_anchor = target.anchors[0] if target else Vector2.ZERO
+	hotspots.queue_redraw()
+	room_label.text = _room_name()
+	if target:
+		room_label.text += " — " + target.text
+
+
+func _unindicate(target: SceneTarget) -> void:
+	if indicated_target == target:
+		_indicate(null)
 
 
 func _sync_hotspots() -> void:
 	if hotspots and gameplay_panel:
 		hotspots.visible = gameplay_panel.visible
+		if not hotspots.visible:
+			_indicate(null)
 
 
 func _clear(parent: Node) -> void:
@@ -560,32 +657,48 @@ func _room_name() -> String:
 
 
 func _show_room(text: String) -> void:
+	_indicate(null)
 	_clear(hotspots)
 	_clear(choices)
 	title.text = "CARTÓRIO DOS ESQUECIDOS   /   MR–014"
 	room_label.text = _room_name()
 	message.text = text
 	inventory.text = "Inventory: lens" + (" (selected)" if selected_lens else "") if has_lens else "Inventory: empty"
+	var form_ready := room == "aurora" and reconstruction_solved == [true, true] and rectification == ""
 	if room == "observatory":
-		_scene_object("Examine desk", _desk, Rect2(60, 367, 335, 104))
-		_scene_object("Inspect delivery record", _open_document, Rect2(220, 320, 169, 47))
-		_scene_object("Talk to keeper", _keeper, Rect2(422, 119, 160, 219), "confirm")
-		_scene_object("Lantern room →", func(): _transition("lantern"), Rect2(596, 115, 150, 220))
-		_scene_object("Teatro Aurora →", func(): _transition("aurora"), Rect2(775, 44, 146, 356))
+		_scene_object("Examine desk", _desk, [60, 411, 186, 368, 231, 374, 348, 362, 383, 337, 414, 339, 394, 417, 394, 473, 60, 476], Vector2(197, 386))
+		_scene_object("Inspect delivery record", _open_document, [219, 347, 289, 325, 388, 331, 347, 361, 231, 373], Vector2(296, 349))
+		_scene_object("Talk to keeper", _keeper, [422, 323, 425, 270, 438, 239, 470, 220, 473, 204, 462, 187, 459, 151, 470, 130, 493, 118, 519, 117, 539, 132, 545, 154, 535, 188, 524, 211, 527, 222, 557, 237, 571, 260, 582, 316, 570, 338, 433, 328], Vector2(503, 267), "confirm")
+		_scene_object("Lantern room →", func(): _transition("lantern"), [595, 115, 735, 116, 750, 338, 600, 332], Vector2(710, 246))
+		_scene_object("Teatro Aurora →", func(): _transition("aurora"), [774, 89, 911, 44, 925, 411, 793, 338], Vector2(852, 202))
 	elif room == "lantern":
-		_scene_object("Examine lantern", _lantern, Rect2(397, 89, 196, 281))
-		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(35, 94, 132, 328))
+		_scene_object("Examine lantern", _lantern, [398, 344, 418, 320, 423, 207, 413, 186, 440, 152, 454, 132, 453, 110, 468, 94, 492, 89, 511, 99, 518, 122, 534, 150, 575, 186, 567, 208, 566, 306, 573, 323, 591, 340, 589, 352, 543, 366, 480, 371, 401, 360], Vector2(491, 257))
+		_scene_object("← Observatory", func(): _transition("observatory"), [39, 95, 168, 135, 160, 361, 33, 427], Vector2(112, 278))
 	else:
-		_scene_object("Wall and plan", func(): _aurora_evidence(0), Rect2(398, 130, 115, 185))
-		_scene_object("Old door photos", func(): _aurora_evidence(1), Rect2(514, 133, 76, 88))
-		_scene_object("Building records", func(): _aurora_evidence(2), Rect2(613, 310, 164, 63))
-		_scene_object("Interviews", _interviews, Rect2(815, 136, 122, 297), "confirm")
-		_scene_object("Evidence shelf", _evidence_shelf, Rect2(133, 295, 182, 137), "confirm")
-		_scene_object("Reconstruction board", _open_board, Rect2(640, 88, 167, 158), "open")
-		if reconstruction_solved == [true, true] and rectification == "":
-			_scene_object("Cartório rectification", _rectification_choice, Rect2(450, 351, 139, 50), "confirm")
-		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(10, 89, 94, 317))
-	hotspots.present(room, lit)
+		_scene_object("Wall and plan", _aurora_evidence.bind(0), [404, 137, 433, 138, 438, 132, 462, 133, 465, 139, 498, 139, 502, 214, 407, 213], Vector2(448, 176))
+		_scene_object("Old door photos", _aurora_evidence.bind(1), [527, 136, 581, 144, 575, 179, 583, 208, 528, 219, 519, 176], Vector2(550, 158))
+		_scene_object("Building records", _aurora_evidence.bind(2), [623, 331, 679, 314, 719, 328, 731, 325, 775, 343, 712, 370, 623, 347], Vector2(681, 333))
+		# The callboard and shelf index are opt-in lists; witnesses and props
+		# themselves go straight to the relevant interview or document.
+		_scene_object("Interviews", _interviews, [830, 91, 914, 75, 916, 106, 831, 118], Vector2(871, 95), "confirm")
+		_scene_object("Talk to Marina", _interview.bind(0), [828, 428, 842, 411, 842, 349, 833, 342, 840, 317, 829, 314, 816, 297, 830, 245, 842, 227, 861, 218, 844, 208, 837, 181, 840, 155, 855, 141, 877, 136, 900, 144, 911, 160, 914, 177, 908, 199, 911, 211, 896, 218, 914, 229, 924, 248, 937, 295, 929, 305, 915, 308, 923, 345, 916, 365, 925, 410, 932, 425, 924, 434, 899, 428, 886, 371, 880, 371, 870, 427, 847, 434], Vector2(878, 264), "confirm")
+		_scene_object("Talk to Paula", _interview.bind(1), [184, 277, 187, 258, 192, 249, 184, 232, 188, 213, 194, 206, 187, 197, 189, 175, 198, 163, 212, 159, 225, 168, 229, 184, 224, 200, 217, 205, 231, 213, 235, 232, 228, 250, 230, 272, 235, 282, 214, 284, 209, 253, 206, 280, 183, 284], Vector2(209, 220), "confirm")
+		_scene_object("Talk to Jonas", _interview.bind(2), [268, 279, 274, 253, 272, 239, 261, 232, 264, 213, 271, 199, 282, 195, 275, 184, 273, 169, 278, 154, 294, 150, 309, 157, 311, 171, 306, 186, 300, 194, 313, 199, 322, 216, 326, 238, 315, 244, 315, 270, 320, 278, 319, 284, 302, 283, 294, 250, 289, 276, 285, 285, 264, 285], Vector2(294, 219), "confirm")
+		_scene_object("Talk to Augusto", _interview.bind(3), [320, 347, 329, 331, 329, 296, 321, 278, 328, 249, 338, 233, 346, 230, 338, 214, 339, 196, 348, 181, 365, 180, 377, 190, 381, 204, 376, 221, 369, 231, 381, 241, 388, 266, 383, 283, 375, 289, 373, 324, 380, 343, 373, 352, 354, 347, 351, 309, 345, 342, 340, 352, 318, 354], Vector2(354, 259), "confirm")
+		# The brass index occupies the front rail, not the telephone or tabletop.
+		_scene_object("Evidence shelf", _evidence_shelf, [171, 336, 271, 335, 277, 339, 275, 356, 269, 360, 173, 363, 167, 358, 168, 340], Vector2(222, 349), "confirm")
+		_scene_object("19:42 call", _inspect_evidence.bind(0), [173, 308, 187, 296, 212, 294, 230, 299, 240, 309, 238, 323, 227, 329, 183, 328, 173, 323], Vector2(205, 317))
+		var traces := _scene_object("Eva's traces", _inspect_evidence.bind(1), [248, 308, 255, 303, 267, 304, 278, 307, 278, 317, 300, 322, 282, 334, 250, 330, 250, 319], Vector2(273, 323))
+		# The cup and photo share evidence with the case below. Keep the shelf
+		# index and the air between them out of this target, with one tab stop.
+		traces.add_silhouette([160, 384, 170, 377, 188, 373, 204, 373, 237, 377, 271, 373, 285, 378, 276, 386, 233, 387, 198, 397, 178, 397, 166, 392], Vector2(207, 384))
+		_scene_object("Rescue photo", _inspect_evidence.bind(2), [564, 343, 605, 332, 622, 348, 585, 361], Vector2(594, 345))
+		_scene_object("Bus and accident records", _inspect_evidence.bind(3), [607, 363, 643, 354, 676, 364, 648, 382, 604, 379], Vector2(639, 368))
+		_scene_object("Reconstruction board", _open_board, [643, 111, 799, 88, 807, 235, 648, 245], Vector2(731, 169), "open")
+		if form_ready:
+			_scene_object("Cartório rectification", _rectification_choice, [463, 381, 500, 356, 566, 364, 533, 387, 464, 396], Vector2(510, 375), "confirm")
+		_scene_object("← Observatory", func(): _transition("observatory"), [14, 118, 103, 149, 100, 342, 11, 407], Vector2(48, 271))
+	hotspots.present(room, lit, form_ready)
 
 
 func _open_board() -> void:

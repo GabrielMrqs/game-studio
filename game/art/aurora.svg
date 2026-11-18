@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
- <!-- Original illustration: side aisle of a closed municipal theatre. -->
+ <!-- Original in-project illustration and witness art: side aisle of a closed
+      municipal theatre. No third-party sprites, photographs or textures. -->
  <defs>
   <linearGradient id="lime" x2=".38" y2="1"><stop stop-color="#304c51"/><stop offset=".55" stop-color="#68766a"/><stop offset="1" stop-color="#ab9270"/></linearGradient>
   <linearGradient id="plaster" x2=".72" y2="1"><stop stop-color="#526468"/><stop offset=".43" stop-color="#9c8f74"/><stop offset="1" stop-color="#b29c77"/></linearGradient>
@@ -10,7 +11,12 @@
   <linearGradient id="jacket" x2=".8" y2=".85"><stop stop-color="#81918a"/><stop offset=".4" stop-color="#516c6c"/><stop offset="1" stop-color="#30434a"/></linearGradient>
   <radialGradient id="glow"><stop stop-color="#ffe3a0" stop-opacity=".55"/><stop offset="1" stop-color="#fadb92" stop-opacity="0"/></radialGradient>
   <radialGradient id="stage"><stop stop-color="#5d5363"/><stop offset="1" stop-color="#222532"/></radialGradient>
-  <linearGradient id="soot" x1="0" y1="1" x2=".28" y2="0"><stop stop-color="#302f37" stop-opacity=".68"/><stop offset="1" stop-color="#3a4144" stop-opacity="0"/></linearGradient>
+   <linearGradient id="soot" x1="0" y1="1" x2=".28" y2="0"><stop stop-color="#302f37" stop-opacity=".68"/><stop offset="1" stop-color="#3a4144" stop-opacity="0"/></linearGradient>
+   <linearGradient id="rust" x2="1" y2=".8"><stop stop-color="#cf946d"/><stop offset=".42" stop-color="#a06355"/><stop offset="1" stop-color="#563c49"/></linearGradient>
+   <linearGradient id="denim" x2=".8" y2="1"><stop stop-color="#819493"/><stop offset=".48" stop-color="#506977"/><stop offset="1" stop-color="#303c50"/></linearGradient>
+   <linearGradient id="wool" x2=".85" y2="1"><stop stop-color="#c1a578"/><stop offset=".58" stop-color="#8a755d"/><stop offset="1" stop-color="#514955"/></linearGradient>
+    <linearGradient id="brownskin" x2=".88" y2=".65"><stop stop-color="#c58f6d"/><stop offset="1" stop-color="#805653"/></linearGradient>
+    <radialGradient id="footlight"><stop stop-color="#edb570" stop-opacity=".22"/><stop offset="1" stop-color="#edb570" stop-opacity="0"/></radialGradient>
  </defs>
  <!-- Room planes and shallow sloping aisle. -->
  <path fill="url(#boards)" d="M0 0h960v500H0Z"/>
@@ -55,7 +61,67 @@
  <path fill="none" stroke="#2e2b35" stroke-width="2" d="M247 201v57m0-4-9 8m9-8 8 8"/>
  <path fill="#ecce9d" stroke="#665353" d="M243 202q4-9 8 0l-1 7h-6z"/>
  <path fill="#302f38" d="M113 304l246-5 13 9-256 6Zm33 3 195-2 19 6-3 8-216 3 1-9z"/>
- <path fill="none" stroke="#a58065" stroke-width="2" d="M145 314l213-3m-218 10 218-3"/>
+  <path fill="none" stroke="#a58065" stroke-width="2" d="M145 314l213-3m-218 10 218-3"/>
+  <!-- Original witness cutouts. Paula and Jonas stand on the raised stage;
+       Augusto stands on the aisle below, with a longer cast shadow. -->
+  <ellipse fill="url(#footlight)" cx="251" cy="280" rx="99" ry="25"/>
+  <g stroke-linejoin="round" stroke-linecap="round">
+   <path fill="#231f2a" opacity=".64" d="M183 278l43-7 25 9-18 10-46-1zM265 279l43-12 33 12-22 10-51-1zM320 347l44-10 41 14-21 12-51-2z"/>
+   <!-- Paula: cropped work jacket, high-waisted trousers, old scar. -->
+   <path fill="#383443" stroke="#2d2b38" stroke-width="1.6" d="M194 240l32-2 4 34 5 9-19 2-7-30-4 26-5 4h-17l2-6 4-8z"/>
+   <path fill="#5c5157" d="M196 244l12 2-6 29-11 2zm18 2 10-3 4 33-8 1z"/>
+   <path fill="#bf9d79" opacity=".74" d="M185 280l18-2-3 4h-16zm32-1 15-2 3 4-17 2z"/>
+   <path fill="#392d37" stroke="#2e2b39" stroke-width="1.5" d="M187 190q1-29 22-30 17 0 20 16 4 19-11 29l-23 3-8-11z"/>
+   <path fill="url(#rust)" stroke="#4d3943" stroke-width="1.7" d="M199 204l16-1 16 10 4 19-7 18-10-6-2-4-16 2-8 7-8-17 4-19z"/>
+   <path fill="#e4bd8c" d="M202 207l13-1 5 10-5 23-12 1-4-25z"/>
+   <path fill="none" stroke="#d9a077" stroke-width="1.2" d="M193 215l-3 15 6 9m29-26 4 15-4 7m-29-24 2 13m23-12 2 9"/>
+   <path fill="url(#skin)" stroke="#714b49" stroke-width="1" d="M202 195l12 2 1 11-7 4-7-4zM196 232q11-2 20 3l-2 6-16-2zm24 1 6 2-2 8-8-2z"/>
+   <path fill="url(#skin)" stroke="#603f45" stroke-width="1.2" d="M196 180l14-10 12 8 1 13q-3 11-12 13-12-4-13-12-8 1-7-5 1-5 5-3z"/>
+   <path fill="#613e43" d="M192 185q-5-16 12-22 15-4 21 12-10 3-16-6-3 11-17 16z"/>
+   <path fill="none" stroke="#d29976" stroke-width="1.1" d="M193 176q6-9 16-11m-10 12 8-7m6-5 7 5"/>
+    <path fill="none" stroke="#563d44" stroke-width="1" d="M201 185l5-1m9-1h5m-9 2 1 5 3 1m-10 5 8 1"/>
+    <path fill="#42313a" d="M202 186l5-1-1 2-3 1zm13-1 5-1-1 2-3 1z"/>
+    <path fill="#efc39b" opacity=".72" d="M198 181l7-5 3-4-2 5-6 5zm2 10 5 1 1 4-4-1z"/>
+    <path fill="none" stroke="#ab574e" stroke-width="1.2" d="M218 188l-2 3 2 3-2 3m-1 39 2 1-2 2"/>
+    <circle cx="196" cy="192" r="1.6" fill="#f2c38b"/>
+    <path fill="none" stroke="#e4b181" stroke-width="1.1" d="M190 219l-2 11m39-11 3 9m-33 13 5 1m23 1 4-3"/>
+   <!-- Jonas: close-cropped curls, patched denim and rolled sleeves. -->
+   <path fill="#353744" stroke="#2e303b" stroke-width="1.7" d="M275 236l39 1 1 33 7 8-3 6-17-1-8-33-5 26-4 9h-21l1-5 7-5z"/>
+   <path fill="#5e5a63" d="M278 242l13 3-6 29-10 3zm20 3 12-2 1 31-6 2z"/>
+   <path fill="#b19276" d="M266 280l20-3-2 6h-19zm38-2 14-1 3 4-16 1z"/>
+   <path fill="url(#denim)" stroke="#333846" stroke-width="1.8" d="M281 196l18-2 14 5 9 17 4 22-11 6-6-9-19 4-16-3-13-4 3-19 7-14z"/>
+   <path fill="#b4a18c" d="M283 198l15-1 6 8-5 31-13 1-7-29z"/>
+   <path fill="#b0836a" opacity=".8" d="M286 210l16-1-1 4-14 1zm1 9 13-1-1 3-12 1zm1 8 11-1-1 3-10 1z"/>
+   <path fill="none" stroke="#98a5a0" stroke-width="1.2" d="M276 203l-5 17m38-19 6 11 5 19m-45-19 2 18m29-16 4 9"/>
+   <path fill="#c69970" stroke="#4c4a53" d="M308 208l6 1 3 7-7-1z"/>
+   <path fill="url(#brownskin)" stroke="#64474a" stroke-width="1" d="M283 186l16 1v12l-8 5-9-6zm-17 38 10 3 4 7-8 5-10-8zm46 2 10-2 4 14-11 6-5-5z"/>
+   <path fill="url(#brownskin)" stroke="#523c44" stroke-width="1.3" d="M278 171q6-14 22-12l8 10-3 17q-5 10-13 9-12-3-13-14-6 0-5-6 0-4 4-4z"/>
+   <path fill="#37303a" d="M274 175q-4-6 1-11-2-6 4-7 2-6 8-5 4-5 10-1 5-1 7 4 7 0 6 7 4 2 1 10l-6 2-3-8q-10 6-22 2l-1 8z"/>
+   <path fill="none" stroke="#94715f" stroke-width="1.1" d="M278 162q7-9 20-8m-11 10q7 1 15-4"/>
+    <path fill="none" stroke="#493840" stroke-width="1.1" d="M283 174l7-1m8 0 5 1m-8 1-1 6 4 1m-10 5q5 2 10-1"/>
+    <path fill="#42323b" d="M284 175l6-1-1 3h-3zm14-1 5 1-2 2-2-1z"/>
+    <path fill="#e5ac81" opacity=".62" d="M279 172l7-3 6 1-9 2-3 5zm1 9 6 2 1 3-5-2z"/>
+    <path fill="#6e494b" opacity=".75" d="M283 182q3 7 9 7 7 0 12-7l-1 4q-5 9-11 8-7-1-9-12z"/>
+    <path fill="none" stroke="#b5aca0" stroke-width="1" d="M271 218l5 1m35 1 5 1m-39 16 7 2m20-2 5-2"/>
+   <!-- Augusto: old wool coat, moustache and a folded theatre programme. -->
+   <path fill="#403c49" stroke="#332f3c" stroke-width="1.8" d="M330 282l43-1 2 31-2 12 7 19-7 9-19-5-3-38-6 33-5 10-22 2 2-7 9-16z"/>
+   <path fill="#756763" d="M334 294l14 1-7 40-9 5zm21 0 13-1 1 36 5 14-17-1z"/>
+   <path fill="#302f38" d="M324 343l18-3-3 10-19 3zm32-2 17-1 6 5-7 6-16-4z"/>
+   <path fill="url(#wool)" stroke="#4d4145" stroke-width="1.8" d="M346 230l22-1 13 12 7 25-5 17-8 6-4-3-1 11-41-1 1-11-9-7 7-29 10-16z"/>
+   <path fill="#525452" d="M346 232l21 2 5 18-7 33-19 3-5-31z"/>
+   <path fill="#8b5550" d="M342 232l10-5 19 4-1 12-10 2 5 22-8 6-7-30-9-4z"/>
+   <path fill="none" stroke="#d5b989" stroke-width="1.4" d="M339 236l-7 16-5 22m49-34 8 26-5 11m-45 14 11 1m-3-41 3 14"/>
+   <path fill="url(#skin)" stroke="#70534e" stroke-width="1" d="M347 218l20 1 1 13-10 6-12-7zm-15 54 13 1 6 8-9 5-11-3zm44-5 8 3-3 11-10 1-4-5z"/>
+   <path fill="#dbc49a" stroke="#74594c" d="M342 267l27-6 6 17-29 6z"/>
+   <path fill="none" stroke="#8c6554" d="M347 270l19-5m-17 9 13-3m-12 7 18-5"/>
+   <path fill="#c0b099" stroke="#544950" stroke-width="1.6" d="M340 211q-7-19 8-28 17-8 28 6 9 12 1 24l-11 13z"/>
+   <path fill="url(#skin)" stroke="#684d51" stroke-width="1" d="M346 200l13-11q5 8 15 10l2 12q-3 14-15 18-14-3-17-15-5-1-5-6 1-5 6-3z"/>
+   <path fill="#dfc9a4" d="M341 202q1-15 16-19l10 1-7 4q-5 11-19 14zm13 15q8-6 17 0l-4 4-7-3-5 3z"/>
+    <path fill="none" stroke="#634a4c" stroke-width="1.1" d="M348 204l8-2m8 0 8 2m-10 1-2 7 5 1m-13 8 5 4m3-2 6-1"/>
+    <path fill="#544049" d="M350 205l6-2-1 3-3 1zm14-2 6 1-2 3-3-1z"/>
+    <path fill="none" stroke="#edd0a3" stroke-width="1" opacity=".7" d="M350 198l6-4m-7 18 4 2m11 7 6-5"/>
+    <path fill="none" stroke="#e3b88c" stroke-width="1" d="M332 252l-4 18m49-24 4 14m-39 15 3 4m5-57 5 4"/>
+  </g>
  <!-- Only working exit, open to a narrow lit landing. -->
  <path fill="#2a3339" stroke="#242a33" stroke-width="4" d="M14 118l89 31-3 193-89 65Z"/>
  <path fill="#ae926f" d="M19 124l79 27-2 187-7 5 2-186-65-23-6 261-5 4z"/>
@@ -64,7 +130,12 @@
  <path fill="#e0ba7d" opacity=".66" d="M55 361l30-23 35 21-84 62-16-14Z"/>
  <path fill="url(#wood)" stroke="#2d2b31" stroke-width="2" d="M28 138l36 33-4 177-39 41Z"/>
  <path fill="#363638" stroke="#b99b75" d="M34 159l23 22-2 52-23-12z"/>
- <path fill="none" stroke="#ccac7d" stroke-width="3" d="M38 270l16 4"/>
+  <path fill="none" stroke="#ccac7d" stroke-width="3" d="M38 270l16 4"/>
+  <path fill="#493e41" stroke="#c29a75" stroke-width="1.2" d="M31 289l28-7-1 59-31 33z"/>
+  <path fill="#876758" d="M34 293l22-7-1 52-25 26z"/>
+  <path fill="none" stroke="#d5b28a" opacity=".75" d="M35 298l-4 56m6-188 18 17-1 47m-5 61 5-1m19-121-2 174"/>
+  <path fill="#bc9a74" stroke="#4c4040" d="M25 363l33-34v10l-34 39zm17-104 5 1-1 21-5-1z"/>
+  <path fill="#342e38" d="M45 276l-2 2 1 2 2-1z"/>
  <path fill="#31524f" stroke="#d1ab7e" stroke-width="2" d="M26 92l60 21v19l-60-22Z"/>
  <path fill="none" stroke="#eed9a3" stroke-width="1.5" d="M39 102l-6 3 6 6m-6-6 12 4m7-5 9 4-1 11-8-3zm10 9 11 5m-6-8v11"/>
  <!-- Disputed wall: clipboard over unbroken masonry and old contact prints. -->
@@ -98,18 +169,31 @@
  <path fill="url(#wood)" stroke="#372f32" stroke-width="2" d="M137 386l45-19 132 6-28 31-150 4zM145 323l38-26 134 7-27 39-150 4z"/>
  <path fill="#b39469" d="M146 325l40-25 126 6-27 29-141 6z"/>
  <path fill="#5d443c" d="M140 340l150-5 25-27-1 9-25 27-149 6zm-4 64 149-6 29-25-1 9-27 24-149 6z"/>
- <path fill="#34343c" stroke="#c09774" stroke-width="2" d="M160 384q16-14 44-11l33 4 34-4 14 5-9 8-43 1-35 10q-32 3-38-13z"/>
- <path fill="none" stroke="#7d7168" d="M171 385q12-9 33-8l33 4 32-5"/>
- <path fill="#a99a81" d="M192 388h6v5h-6zm31-4h7v5h-7z"/>
- <path fill="#384244" stroke="#342f31" stroke-width="2" d="M175 323l5-14q26-10 49 1l8 13q-23 10-62 0z"/>
- <ellipse fill="#a39a7e" stroke="#45474a" stroke-width="2" cx="205" cy="317" rx="11" ry="5"/>
- <path fill="#252d36" stroke="#76665b" stroke-width="1.5" d="M174 308q6-11 26-12 28-2 36 9l-5 7-12-3-3-5-19-1-8 8-12 1z"/>
+  <path fill="#34343c" stroke="#c09774" stroke-width="2" d="M160 384q16-14 44-11l33 4 34-4 14 5-9 8-43 1-35 10q-32 3-38-13z"/>
+  <path fill="#555159" d="M165 383q15-10 37-8l35 4 33-4 10 3-7 4-40 2-36 9q-22 2-32-10z"/>
+  <path fill="none" stroke="#897a6e" d="M171 385q12-9 33-8l33 4 32-5m-98 14q9 5 28 3l35-9"/>
+  <path fill="#a99a81" stroke="#453c40" stroke-width=".8" d="M192 388l6-1v5l-6 1zm31-5 6-1v5l-6 1z"/>
+  <path fill="none" stroke="#322931" stroke-width="2.4" d="M199 389q5 3 9 1l11-4 2-2"/>
+  <path fill="none" stroke="#c8a37c" stroke-width=".8" d="M201 389q4 2 7 0l11-4"/>
+  <path fill="#384244" stroke="#342f31" stroke-width="2" d="M175 323l5-14q26-10 49 1l8 13q-23 10-62 0z"/>
+  <ellipse fill="#a39a7e" stroke="#45474a" stroke-width="2" cx="205" cy="317" rx="11" ry="5"/>
+  <path fill="#252d36" stroke="#76665b" stroke-width="1.5" d="M174 308q6-11 26-12 28-2 36 9l-5 7-12-3-3-5-19-1-8 8-12 1z"/>
+  <path fill="none" stroke="#c29a77" stroke-width="1" stroke-linecap="round" opacity=".7" d="M183 302q18-8 37-3m-39 22q22 7 49 0"/>
+  <path fill="#454549" d="M201 314h2v1h-2zm5 0h2v1h-2zm4 2h2v1h-2zm-10 1h2v1h-2zm7 1h2v1h-2zm-4 1h2v1h-2z"/>
  <path fill="none" stroke="#35383c" stroke-width="2" d="M236 310q4 1 4 7t7 2"/>
- <path fill="#e4ceb0" stroke="#65534b" stroke-width="1.5" d="M250 308q6-6 19-1l-2 13q-8 7-15 0zM269 311q14-4 5 6l-6 1"/>
- <ellipse fill="#885f55" cx="259" cy="309" rx="7" ry="2"/>
- <path fill="#dfca9e" stroke="#67564d" d="M252 328l24-10 22 4-17 10z"/>
+  <path fill="#e4ceb0" stroke="#65534b" stroke-width="1.5" d="M250 308q6-6 19-1l-2 13q-8 7-15 0zM269 311q14-4 5 6l-6 1"/>
+  <ellipse fill="#885f55" cx="259" cy="309" rx="7" ry="2"/>
+  <path fill="#b48965" stroke="#634b46" d="M251 321l31-5 15 7-32 9z"/>
+  <path fill="none" stroke="#775745" d="M252 321l20 6 10-11"/>
+  <path fill="#dfca9e" stroke="#67564d" d="M252 328l24-10 22 4-17 10z"/>
  <path fill="#677676" d="M259 327l17-7 16 2-13 7z"/>
- <path fill="#bdb49b" d="M270 326l6-5 7 4-5 3z"/>
+  <path fill="#bdb49b" d="M270 326l6-5 7 4-5 3z"/>
+    <!-- Brass evidence index hangs from the front rail, below the loose objects. -->
+    <path fill="#342d32" opacity=".7" d="M168 340l110-5 2 8-3 16-107 6-6-5z"/>
+    <path fill="url(#wood)" stroke="#483636" stroke-width="1.5" d="M171 336L271 335l6 4-2 17-6 4-96 3-6-5 1-18z"/>
+    <path fill="#43343a" stroke="#dfbb8a" stroke-width="1.4" d="M173 341l98-4-2 18-96 4z"/>
+    <path fill="none" stroke="#f5dbaf" stroke-width="1.45" stroke-linejoin="round" d="M193 353v-7l6-.3m-6 3.5 5-.2m-5 4 6-.3m4-7 3 6.8 3-7.1m4-.2v7m5-.2v-7l4-.2 2 2v3l-2 2zm10-.5v-7l6-.3m-6 3.5 5-.2m-5 4 6-.3m4-.2v-7l6 6.7v-7m10 .2-3-.4-3 2v4l3 1 3-.6m4-.1v-7l5-.2m-5 3.5 4-.2m-4 3.7 5-.2"/>
+    <path fill="#e6c89a" stroke="#8a6151" d="M179 350a1.6 1.6 0 1 0 0 .1m85-4a1.6 1.6 0 1 0 0 .1"/>
  <ellipse fill="#30323a" stroke="#968063" stroke-width="2" cx="142" cy="431" rx="6" ry="8"/>
  <ellipse fill="#30323a" stroke="#968063" stroke-width="2" cx="281" cy="418" rx="6" ry="7"/>
  <!-- Backstage notice board with thread, routing slips and mismatched timelines. -->
@@ -123,7 +207,10 @@
  <path fill="none" stroke="#766956" d="M702 194l25-4m-25 9 24-4m-23 10 26-4m35-17 18-3m-17 8 14-2m-14 7 16-3"/>
  <path fill="none" stroke="#874c47" stroke-width="1.6" d="M679 133l32 51 48-64 12 58-60 6"/>
  <path fill="#e6b777" stroke="#8d5950" d="M682 133a3 3 0 1 0-6 0 3 3 0 0 0 6 0m32 51a3 3 0 1 0-6 0 3 3 0 0 0 6 0m48-64a3 3 0 1 0-6 0 3 3 0 0 0 6 0m12 58a3 3 0 1 0-6 0 3 3 0 0 0 6 0"/>
- <!-- Manager, holding the key ring against her work jacket. -->
+  <!-- Rehearsal callboard and Marina, holding her keys against her work jacket. -->
+  <path fill="#46373c" stroke="#d3ab7d" stroke-width="2" d="M830 91l84-16 2 31-85 12z"/>
+  <path fill="#785749" stroke="#af8568" d="M834 94l77-14v22l-76 12z"/>
+  <path fill="none" stroke="#f3d7a2" stroke-width="1.6" d="M844 104v-9l6-1m-6 5 5-1m5-5v9l5-1v-9m5 8v-9l5-1v4l-5 1 6 4m4-1v-9l5-1v9zm12-2v-9l5-1v8zm9-2 4-9 4 8m-6-2 5-1"/>
  <path fill="#252a33" opacity=".54" d="M806 400q68-24 138 13l-21 32-125-1-21-17z"/>
  <path fill="#3b3b43" stroke="#332e37" stroke-width="3" d="M844 337l74 1-1 37 7 39q-11 10-26 6l-12-52-7 1-10 53q-15 5-27-3l1-39z"/>
  <path fill="#292c35" stroke="#33313a" stroke-width="2" d="M842 410q10 4 28 0l-2 17q-27 10-39 4-5-7 13-16zm57 2q13 3 25-3l7 15q2 7-13 8l-18-5z"/>
@@ -138,9 +225,15 @@
  <path fill="none" stroke="#aca292" opacity=".7" stroke-width="1.6" d="M848 171q8-24 26-26m-19 27q14-11 20-23m9-1q7 16 20 21m-10-21q14 11 14 22"/>
  <path fill="none" stroke="#65484a" stroke-width="1.5" d="M855 178q6-4 14-2m13-2q8-2 13 2m-17 4-2 13 6 1m-13 8q8 3 16-1m-17 7 13 1m-30-22 4 4"/>
  <path fill="#3e373b" d="M862 180q5-3 6 1l-1 3-5-1zm24-2q5-2 6 1l-2 3-4-1z"/>
- <path fill="#c2a681" stroke="#725452" d="M850 193q7 1 4 6-6 3-6-3z"/>
- <path fill="url(#skin)" stroke="#60494b" stroke-width="1.5" d="M844 303q14-11 27-9l13 10-5 10-14-5-13 4zm64-6q-14-4-22 1l-10 9 9 6 13-5 9 1z"/>
- <path fill="none" stroke="#d8b780" stroke-width="2" d="M882 308a5 5 0 1 0 6 5m-4 1 1 13 4 1m-3-7 4-1m-6-3-5 10"/>
+  <path fill="#c2a681" stroke="#725452" d="M850 193q7 1 4 6-6 3-6-3z"/>
+   <path fill="none" stroke="#edbe93" opacity=".58" stroke-width="1.4" d="M851 177q6-8 14-11m-10 28 9 6m23-9 6-3m-24 17 12 4"/>
+   <path fill="none" stroke="#c1baad" opacity=".5" stroke-width="1.2" d="M850 151q8-9 21-10m13 2q7 11 19 18m-46 55q-19 8-25 28"/>
+  <path fill="url(#skin)" stroke="#60494b" stroke-width="1.5" d="M844 303q14-11 27-9l13 10-5 10-14-5-13 4zm64-6q-14-4-22 1l-10 9 9 6 13-5 9 1z"/>
+  <path fill="none" stroke="#8d6258" stroke-width="1.15" d="M852 302l11-3 10 3m-15 1 9-1 9 3m12-2 8-3 7 2m-10 2 6-2 6 1"/>
+  <path fill="none" stroke="#d8b780" stroke-width="2" d="M882 308a5 5 0 1 0 6 5m-4 1 1 13 4 1m-3-7 4-1m-6-3-5 10"/>
+  <path fill="#ae6558" stroke="#473940" d="M850 244l11-4 8 17-7 8-9-5z"/>
+  <path fill="#dfbe8f" d="M854 246l7-2 3 9-8 2z"/>
+  <path fill="none" stroke="#c7b098" opacity=".72" d="M846 249l-7 16m1 69 21 8m36-4 14-6m-46 18 4 13m32-12 7 11m-44 17-5 25m47-13 5 14"/>
  <!-- Usher's station, architect's folio, and the municipal form. -->
  <path fill="#2b2832" opacity=".62" d="M355 433l89-54 279-13 90 44-21 54-404 26z"/>
  <path fill="#513b38" stroke="#352e34" stroke-width="3" d="M397 407l386-21-6 82-25 7 5-68-319 22-13 57-26 7z"/>
@@ -153,11 +246,19 @@
  <path fill="#e1cc9f" stroke="#796451" d="M638 331l44-12 70 24-40 14z"/>
  <path fill="none" stroke="#847457" d="M667 329l47 16m-57-13 47 16m-21-21 38 13m-70-4 44 15"/>
  <path fill="#9c6155" d="M723 343l12 2-8 4-11-3z"/>
- <path fill="#3f554f" stroke="#403b37" stroke-width="2" d="M452 381l49-29 79 9-41 29-85 10z"/>
- <path fill="#dfc79a" stroke="#6e5947" d="M463 381l37-25 66 8-33 23-69 9z"/>
- <path fill="none" stroke="#8a795c" d="M483 380l54-10m-59 15 51-9m-43 13 37-7m-27-15 20-3"/>
- <path fill="#9d6254" d="M485 386q8-3 9 1-3 5-12 5-6-2 3-6z"/>
- <path fill="#3d3435" stroke="#ae8d66" stroke-width="1.4" d="M551 380l32-15 6 1-34 17-6 1z"/>
+  <path fill="#3f554f" stroke="#403b37" stroke-width="2" d="M452 381l49-29 79 9-41 29-85 10z"/>
+  <path fill="none" stroke="#708078" d="M459 382l42-27 70 8-35 24-78 10z"/>
+  <path fill="#3d3435" stroke="#ae8d66" stroke-width="1.4" d="M551 380l32-15 6 1-34 17-6 1z"/>
+  <!-- Small silver-gelatin print and the bus dossier: separate, reachable props. -->
+  <path fill="#e0c7a0" stroke="#544743" stroke-width="1.5" d="M564 343l41-11 17 16-37 13z"/>
+  <path fill="#6a7371" d="M570 344l34-9 12 11-32 11z"/>
+  <path fill="#343c45" d="M578 350l9-7 7 1 6-5 10 5-24 11z"/>
+  <path fill="#cabc9e" d="M592 345l3-2 4 1-2 3 4 2-7 3-4-2zm8-1 3-2 4 1 1 3-6 2z"/>
+  <path fill="#956953" stroke="#4e403d" stroke-width="1.4" d="M607 363l36-9 33 10-28 18-44-3z"/>
+  <path fill="#d5bea3" stroke="#786056" d="M611 365l35-8 24 7-24 14-36-2z"/>
+  <path fill="none" stroke="#887260" d="M618 366l27-6m-26 9 24-5m-20 8 22-5m-15 8 23-7"/>
+  <path fill="#9c9a72" stroke="#655a52" d="M646 359l13-3 14 6-13 5z"/>
+  <path fill="none" stroke="#615952" d="M651 359l12 5m-5-6 8 3"/>
  <!-- Near auditorium seats silhouette the bottom edge. -->
  <path fill="#322933" stroke="#2a2a34" stroke-width="4" d="M0 469q15-31 52-41 29-5 44 18l11 19q15-32 47-37 30-6 46 18l11 25q12-21 39-22 26-3 43 25l11 26H0Z"/>
  <path fill="url(#velvet)" d="M0 480q13-34 50-46 28-5 41 17l10 20-3 29H0Zm111 20 1-26q8-33 42-40 26-5 40 15l20 51Zm110 0-3-20q12-25 32-25 24-3 41 29l5 16Z"/>
