@@ -63,7 +63,7 @@ for (const actual of [false, true]) test(`Cezar startup sweeps a registered orph
         try { process.kill(-record.pid, 'SIGKILL'); } catch (error) { if (error.code !== 'ESRCH') throw error; }
       }
     }
-    await rm(root, { recursive: true, force: true });
+    await rm(root, { recursive: true, force: true, maxRetries: 5 });
   });
   const source = await readFile(resolve('node_modules/@open-mercato/cezar/scripts/mock-opencode-serve.mjs'), 'utf8');
   assert.ok(source.includes('}), 20);'));
