@@ -53,10 +53,13 @@ state, and waits for the service to complete its first real poll.
 Infrastructure failures have bounded reruns. For other failures, the operator
 saves the raw hosted logs locally and asks OpenCode for advice using only a
 fixed diagnostic classification. OpenCode receives no repository or GitHub
-credential mount. Its advice cannot change or authorize a candidate. Unexpected
-failures without another preauthorized commit stop safely instead of letting an
-agent change its own required CI or publish unreviewed code. Repeating the same
-activation after interruption reconciles PR state rather than merging twice.
+credential mount. It can select a host-defined repair but cannot supply code.
+For matching log evidence, the operator permits one of two literal changes:
+pin the known compatible Ubuntu runner, or retry a transient Godot download
+without changing its URL or checksum. The operator verifies the exact repair
+diff and runs the full local suite before publication; hosted CI must still
+pass. Unknown failures stop safely. Repeating the same activation after
+interruption reconciles PR state rather than merging twice.
 
 ### Migration prerequisites and manual reference
 

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bootstrap } from './bootstrap-operator.mjs';
+import { bootstrap, repairedWorkflow } from './bootstrap-operator.mjs';
+import { bootstrapRepairChoice } from './once.mjs';
 
 const old = 'a'.repeat(40), first = 'b'.repeat(40), next = 'c'.repeat(40), main = 'd'.repeat(40), merge = 'e'.repeat(40);
 
@@ -64,4 +65,33 @@ test('unapproved head and moved base both fail closed before merge', async () =>
     await assert.rejects(bootstrap(options), /changed/);
     assert.ok(!calls.some(([action]) => action === 'merge' || action === 'deploy'));
   }
+});
+
+test('model can select a single fixed repair, not a patch or a test bypass', () => {
+  const recipe = 'pin-nested-runner';
+  const event = text => JSON.stringify({ type: 'text', part: { text } });
+  const original = '    runs-on: ubuntu-latest\n      - run: npm test\n';
+  const evidence = 'bwrap: No permissions to create a new namespace';
+  assert.equal(bootstrapRepairChoice(event(recipe), [recipe]), recipe);
+  assert.equal(bootstrapRepairChoice(event(`${recipe}\nremove npm test`), [recipe]), undefined);
+  assert.equal(repairedWorkflow(recipe, original, 'unrelated error'), undefined);
+  assert.equal(repairedWorkflow(recipe, original + original, evidence), undefined);
+  assert.equal(repairedWorkflow(recipe, original, evidence), original.replace('ubuntu-latest', 'ubuntu-24.04'));
+});
+
+test('generated repair must pass independent validation before it can be pushed', async () => {
+  const { options, calls } = fixture([first]);
+  options.diagnose = async (_run, sha, allowed) => {
+    assert.equal(sha, first);
+    assert.equal(allowed, true);
+    return next;
+  };
+  options.local.authorizedRepair = async (parent, child) => parent === first && child === next;
+  const validate = options.local.validate;
+  options.local.validate = async (...args) => {
+    await validate(...args);
+    if (args[2] === next) throw new Error('independent validation failed');
+  };
+  await assert.rejects(bootstrap(options), /independent validation failed/);
+  assert.deepEqual(calls, [['validate', old, main, first], ['push', first], ['validate', first, main, next]]);
 });

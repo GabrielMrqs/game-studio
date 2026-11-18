@@ -259,7 +259,13 @@ export function gameRunner(config) {
   };
 }
 
-export async function adviseBootstrap(config, dir, summary) {
+export function bootstrapRepairChoice(output, allowed) {
+  const text = output.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line))
+    .filter(event => event.type === 'text').map(event => event.part?.text ?? '').join('').trim();
+  return allowed.includes(text) ? text : undefined;
+}
+
+export async function adviseBootstrap(config, dir, summary, allowed = []) {
   const home = privateDir(resolve(root, config.opencodeHome ?? join(homedir(), '.local/share/game-studio/opencode')));
   if (home === realpathSync(homedir())) throw new Error('Expected a dedicated model profile.');
   const policy = join(dir, 'advice-policy.json');
@@ -267,15 +273,17 @@ export async function adviseBootstrap(config, dir, summary) {
     { action: '*', resource: '*', effect: 'deny' },
   ] }), { flag: 'wx', mode: 0o600 });
   logs = dir;
-  await run('opencode-advice.jsonl', 'flock', ['-n', '-F', home, 'timeout', ...sandbox('120s',
+  const output = await run('opencode-advice.jsonl', 'flock', ['-n', '-F', home, 'timeout', ...sandbox('120s',
     '--share-net', '--ro-bind', '/etc/ssl', '/etc/ssl',
     '--ro-bind', '/etc/resolv.conf', '/etc/resolv.conf', '--ro-bind', '/etc/hosts', '/etc/hosts',
     '--bind', home, '/home/agent',
     '--ro-bind', policy, '/home/agent/.config/opencode/opencode.json',
     '/usr/bin/opencode', '--standalone', 'run', '--format', 'json', '--model', 'openai/gpt-6.2-sol',
-    'Suggest a minimal Game Studio CI fix without disabling any tests or sandbox boundaries. ' +
-    'Respond with advice only. Trusted operator failure classification: ' + summary,
+    (allowed.length ? `Select one permitted CI repair, replying only with its identifier or NONE: ${allowed.join(', ')}. `
+      : 'Suggest a minimal Game Studio CI fix without disabling any tests or sandbox boundaries. Advice only. ') +
+    'Trusted operator failure classification: ' + summary,
   )]);
+  return bootstrapRepairChoice(output, allowed);
 }
 
 function stageEdits(base, indexGit, statusGit = indexGit) {
