@@ -1,5 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
- <!-- Original illustration: the municipal office after closing. -->
+ <!-- Original in-project illustration and character art: the municipal office after closing.
+      No third-party sprites, photographs or textures. -->
  <defs>
   <linearGradient id="wall" x2=".9" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#3d6261"/><stop offset=".48" stop-color="#90917a"/><stop offset="1" stop-color="#ae9671"/></linearGradient>
   <linearGradient id="tile" x2="0" y2="1"><stop stop-color="#61584e"/><stop offset="1" stop-color="#242936"/></linearGradient>
@@ -10,6 +11,7 @@
   <linearGradient id="hall" x2="0" y2="1"><stop stop-color="#211f2b"/><stop offset=".65" stop-color="#503d3c"/><stop offset="1" stop-color="#957354"/></linearGradient>
   <radialGradient id="spill"><stop stop-color="#f3db9b" stop-opacity=".43"/><stop offset="1" stop-color="#f3db9b" stop-opacity="0"/></radialGradient>
   <linearGradient id="lacquer" x2=".12" y2="1"><stop stop-color="#526964"/><stop offset=".42" stop-color="#465854"/><stop offset="1" stop-color="#293b40"/></linearGradient>
+  <linearGradient id="brass" x2=".87" y2=".35"><stop stop-color="#f0d39b"/><stop offset=".42" stop-color="#c2a176"/><stop offset="1" stop-color="#725741"/></linearGradient>
  </defs>
  <!-- Ceiling, converging skirting and tile joints. -->
  <path fill="#242d38" d="M0 0H960V500H0Z"/>
@@ -57,20 +59,38 @@
  <path fill="#414740" stroke="#373936" stroke-width="2" d="M595 115l140 1 15 222-150-6z"/>
  <path fill="#a6936c" d="M602 119h129l13 212h-9l-13-203-112 1 4 200h-9z"/>
  <path fill="url(#wood)" stroke="#373533" stroke-width="2" d="M611 130l111-1 12 197-119-3z"/>
- <path fill="#5b413b" stroke="#c19564" d="M621 213l96-1 4 92-97-2zm-1-70h91l4 56-93 2z"/>
+  <path fill="#5b413b" stroke="#c19564" d="M621 213l96-1 4 92-97-2zm-1-70h91l4 56-93 2z"/>
+  <path fill="#483934" opacity=".66" d="M623 216l92-1 .6 5-87 1 2 74-5 4zm0-71 86-.5 1 4-83 1 1 44-4 4z"/>
  <path fill="#554a3d" stroke="#c8a778" d="M638 158l55-1 1 23-55 1z"/>
  <path fill="none" stroke="#eddbac" stroke-width="1.25" d="M649 173v-8m0 8h5m3 0 2-8 3 8m-4-3h3m4 3v-8l5 8v-8m3 0h6m-3 0v8m6-8h4m-4 0v8h5m-5-4h4"/>
  <path fill="none" stroke="#b18c65" opacity=".53" d="M628 230l2 66m18-70 1 56m46-49 4 60m-20-49 1 19m-62 20 1 36"/>
  <path fill="#302e2e" d="M704 239l14-1 1 23h-15z"/>
- <path fill="#d1b37e" d="M705 244q13-7 15 0 1 6-7 5l-9-1z"/>
+  <path fill="#d1b37e" d="M705 244q13-7 15 0 1 6-7 5l-9-1z"/>
+   <path fill="#292b2c" d="M602 328l136 4 12 6-147-3z"/>
+   <path fill="#ac9370" opacity=".22" d="M608 334l125 4 31 29-153-17z"/>
+  <path fill="url(#brass)" stroke="#5b483e" d="M616 309l112 3 1 11-113-2zM610 158l4 1v14l-4-1zm5 123h4v16h-4z"/>
+  <path fill="none" stroke="#e0c292" opacity=".6" d="M621 315l104 3m-99-103 2 84 83 3m-88-156 84-1"/>
+  <path fill="#433839" stroke="#a58463" d="M625 200l88-1 2 4-90 2z"/>
+   <path fill="#322e32" d="M710 254q4-2 5 1l-1 5h-3z"/>
  <path fill="#24282e" stroke="#3d403b" stroke-width="4" d="M774 89l137-45 14 367-132-73z"/>
  <path fill="#b29b75" d="M778 94l132-43 12 351-9-5-12-331-115 34 15 241-7-4z"/>
- <path fill="url(#hall)" d="M787 102l113-34 11 325-113-59z"/>
- <path fill="#332f32" d="M804 111l48-14 8 239-44-18z"/>
+  <path fill="url(#hall)" d="M787 102l113-34 11 325-113-59z"/>
+  <path fill="#6b6052" d="M862 151l36-23 7 180-36-13z"/>
+  <path fill="#403a3a" d="M869 295l36 13 6 85-113-59z"/>
+  <path fill="#ba9a70" opacity=".44" d="M869 295l36 13 1 5-39-14z"/>
+  <path fill="none" stroke="#a88868" stroke-opacity=".64" d="M877 306l25 41m-40-32 33 60m-56-54 14 45m-24-31 77 34m-61-41 60 24"/>
+  <path fill="#332f32" d="M804 111l48-14 8 239-44-18z"/>
  <path fill="#a57c56" d="M808 110l39-11 4 148-31-1z"/>
  <path fill="url(#glass)" d="M813 119l29-8 4 128h-22z"/>
- <path fill="#293337" d="M828 114l6-2 7 134h-6z"/>
- <path fill="#f3d395" opacity=".36" d="M852 320l58 49 38 82-141-78z"/>
+  <path fill="#293337" d="M828 114l6-2 7 134h-6z"/>
+  <path fill="#e1daa8" opacity=".25" d="M816 136l23-13 1 13-23 20zm2 28 23-20 2 31-22 31z"/>
+  <path fill="#695047" stroke="#c09c71" stroke-width="1.2" d="M823 263l25 4 3 49-25-8z"/>
+  <path fill="none" stroke="#735847" stroke-width="2" d="M803 129l10 174m-4-192 40-13m5 45 5 185"/>
+  <path fill="url(#brass)" stroke="#54453e" d="M845 240l7 1 1 18-7-1zm-6 4 11 1v5l-11-1z"/>
+  <path fill="#2b2b30" d="M793 331l119 61 10 13-130-68z"/>
+  <path fill="none" stroke="#b99066" opacity=".8" d="M799 336l116 62m-44-244 26-4m-24 9 24-4m-21 6 4 174"/>
+  <path fill="#f3d395" opacity=".36" d="M852 320l58 49 38 82-141-78z"/>
+  <path fill="#f3d395" opacity=".20" d="M860 325l8 5 45 94-18-11z"/>
  <path fill="#253a3c" stroke="#bdaf82" stroke-width="2" d="M798 75l77-24v22l-77 22z"/>
   <path fill="none" stroke="#e9ddad" stroke-width="1.5" d="M810 83l4-12 4 10m-6-4 4-1m6-7v8l1 2 4-1v-10m5 8v-10l5-2v4l-5 2 6 4m3-12 5-1v10l-5 1zm9 8v-10l5-2v4l-5 2 6 4m3-1 4-12 4 10m-6-3 4-2"/>
   <!-- Low sorting cabinet; the dim floor lane stays open to both doors. -->
@@ -94,9 +114,12 @@
   <path fill="none" stroke="#d9be8d" opacity=".42" d="M3 107l12 5v48m10-47 7 3 1 45m11-42 6 3 3 36m23-25 9 3 2 23m-78 45 37-2m-38 40 36-10m-41 62 25-10m14-3 45-21m-44 51 46-26"/>
   <path fill="none" stroke="#d1ac79" stroke-width="1.5" opacity=".56" d="M1 77l101 36m-101 59 103 6m-103 86 105-29m-105 120 107-61"/>
  <path fill="#33474a" d="M100 106l12-5 5 248-12 11z"/>
- <!-- Keeper: seated posture, glasses and rolled cardigan cuffs. -->
- <path fill="#2a3032" stroke="#292e32" stroke-width="4" d="M422 339q-6-37 4-76 7-30 43-44l4-20q-15-23-7-49 6-25 30-27 28-6 42 16 12 19 0 48-6 15-14 22l3 13q21 5 34 18 18 17 22 58l-12 46z"/>
- <path fill="url(#coat)" d="M470 222q-29 9-39 37-11 27-7 64l25 5 15-50-5 60 84 6-7-61 15 43 28-8q-3-56-20-72-12-13-35-21z"/>
+  <!-- Keeper: seated posture, glasses and rolled cardigan cuffs. The cool
+       window rims the cardigan; the desk lamp warms the face and hands. -->
+  <path fill="#2a3032" stroke="#292e32" stroke-width="4" d="M422 339q-6-37 4-76 7-30 43-44l4-20q-15-23-7-49 6-25 30-27 28-6 42 16 12 19 0 48-6 15-14 22l3 13q21 5 34 18 18 17 22 58l-12 46z"/>
+  <path fill="url(#coat)" d="M470 222q-29 9-39 37-11 27-7 64l25 5 15-50-5 60 84 6-7-61 15 43 28-8q-3-56-20-72-12-13-35-21z"/>
+  <path fill="#a9b4a0" opacity=".45" d="M470 222q-30 13-37 40l-5 21 2-22q7-27 40-39zm-13 42-8 38-6 1q10-19 14-39z"/>
+  <path fill="#213639" opacity=".67" d="M536 257l13 41 23-11 6 29-27 10zm-76 22-2 41 18 8-16 5z"/>
  <path fill="#333f42" d="M476 225l46-2-15 46-13 70-18-73z"/>
  <path fill="#d9c09b" stroke="#3c4240" stroke-width="2" d="M478 214l25 13 21-13 9 17-23 22-7-17-10 16-24-22z"/>
  <path fill="#875b52" d="M482 192l37 2 4 29-21 8-23-13z"/>
@@ -105,10 +128,24 @@
  <path fill="none" stroke="#777d74" stroke-width="2" d="M472 155q4-20 29-24m-10 19q17-10 19-20m-42 17q7-21 36-24m8 14q12 5 22 13"/>
  <path fill="none" stroke="#4c3e3f" stroke-width="1.8" d="M478 167q8-5 18-2m16-2 14 1m-23 7-3 16 8 1m-17 9q11-5 22-1m-17 7 11 1m-40-30 5 3"/>
  <path fill="none" stroke="#283336" stroke-width="2" d="M474 171l7 1 17-2-1 12-14 1-3-11m18 1 12-1m0-2 19-1-2 11-15 1z"/>
- <path fill="#363b39" d="M489 173h4v4h-4zm27-1h4v4h-4z"/>
- <path fill="none" stroke="#819185" stroke-width="2" d="M451 260q7 11-4 35m100-38 10 34m-81-47 6 24-4 9 7 20m41-47-12 41m21 1 5 19"/>
- <path fill="#688275" stroke="#334140" stroke-width="2" d="M430 300l25 6 18 24-36 13-16-18zm143 0-26 8-12 23 32 13 14-21z"/>
- <path fill="url(#face)" stroke="#5c4540" stroke-width="2" d="M456 323q25-10 44 2l10 11-17 4-14-7-22 4zm94-5q-20-3-37 9l-10 10 12 5 17-11 20 3z"/>
+  <path fill="#363b39" d="M489 173h4v4h-4zm27-1h4v4h-4z"/>
+  <path fill="#f1d2a5" opacity=".39" d="M477 160l15-6 11-11 8 8 15 3-12 2-10-3-11 7zm-3 26 14 4-2 6 10 13q-16-5-22-23z"/>
+   <path fill="none" stroke="#f5ddbb" stroke-width="1.05" opacity=".76" d="M482 174l9-2m23 0 10-1m-53-26q7-16 28-20m-8 20 12-10m14 2 14 8"/>
+   <path fill="#e7d6af" opacity=".28" d="M483 173l4-.5-3 9-1-2zm31-2 4-.4-3 9-2 .2z"/>
+   <path fill="#efd3a5" d="M489 173h1.3v1.3H489zm27-1h1.3v1.3H516z"/>
+   <path fill="none" stroke="#765451" stroke-width="1.05" d="M482 185l8 2m23-3 8-1m-37 7 7 1m31-1-5 3"/>
+   <path fill="#7c514d" opacity=".66" d="M482 195q8 12 19 14 9 2 19-7-6 11-17 12-13-1-21-19z"/>
+  <path fill="#845749" stroke="#493b3c" d="M497 240l8-3 8 7-6 7 2 50-11 7-5-13 7-45z"/>
+  <path fill="none" stroke="#cc9b72" stroke-width="1.2" opacity=".7" d="M500 245l8-3m-11 45 9-7m-10 15 10-7"/>
+  <path fill="#354745" stroke="#819184" d="M531 266l20 2-5 10-16-2z"/>
+  <path fill="url(#brass)" stroke="#54483d" d="M540 256l3 1-3 19-3-1z"/>
+  <path fill="none" stroke="#a6afa0" opacity=".55" d="M446 248l-4 10m4 3-4 12m2 1-4 11m110-39 6 7m0 4 5 10m-1 4 4 9m-93-29 6 20m49-22-5 18"/>
+  <path fill="none" stroke="#819185" stroke-width="2" d="M451 260q7 11-4 35m100-38 10 34m-81-47 6 24-4 9 7 20m41-47-12 41m21 1 5 19"/>
+   <path fill="none" stroke="#9ea38b" stroke-width="1.1" stroke-linecap="round" opacity=".78" d="M462 235q-12 6-18 18m17-13q-8 4-12 12m79-22q13 5 22 14m-19-9q10 4 15 9m-75 32 2 8m1 5 2 8m48-18-2 8m-1 5-2 8"/>
+   <path fill="#a98a64" stroke="#414748" stroke-width=".7" d="M474 274a1.7 1.7 0 1 0 0 .1m3 16a1.7 1.7 0 1 0 0 .1m4 15a1.7 1.7 0 1 0 0 .1"/>
+  <path fill="#688275" stroke="#334140" stroke-width="2" d="M430 300l25 6 18 24-36 13-16-18zm143 0-26 8-12 23 32 13 14-21z"/>
+  <path fill="url(#face)" stroke="#5c4540" stroke-width="2" d="M456 323q25-10 44 2l10 11-17 4-14-7-22 4zm94-5q-20-3-37 9l-10 10 12 5 17-11 20 3z"/>
+  <path fill="none" stroke="#79534c" stroke-width="1.3" d="M462 326l13-4 13 2m-22 5 11-4 11 2m27 5 15-9 14 1m-24 10 12-8 13 1"/>
  <!-- Desk: foreshortened writing surface, brass pulls, paper and stamp. -->
  <path fill="#211f28" opacity=".66" d="M0 452l403-94 174 25-44 117H0z"/>
  <path fill="url(#wood)" stroke="#302b2f" stroke-width="3" d="M19 370l181-55 373 24-43 56L1 459z"/>
@@ -119,8 +156,15 @@
  <path fill="#343e3e" stroke="#aa805e" stroke-width="2" d="M108 390l113-44 191 13-70 47-195 20z"/>
  <path fill="#d2b282" stroke="#5c4840" stroke-width="2" d="M219 347l70-22 99 6-41 29-116 13z"/>
  <path fill="#e7ce9e" stroke="#6e5746" d="M234 350l52-23 87 7-38 19-91 13z"/>
- <path stroke="#897654" fill="none" d="M264 349l53-8m-43 12 50-8m-74 13 80-12m-41-7 27-5"/>
- <path fill="#9b554b" d="M324 349l13-2 2 3-12 2z"/>
+  <!-- Stacked carbon docket, with separately ruled delivery and billing fields. -->
+  <path fill="#a98360" opacity=".62" d="M241 352l45-19 72 3-29 21-82 10z"/>
+  <path fill="#efdaab" stroke="#a78b66" stroke-width=".9" d="M240 352l45-20 72 2-29 21-82 11z"/>
+  <path fill="#867660" d="M281 336l30-1-8 4-32 3z"/>
+  <path fill="none" stroke="#aa8b62" stroke-width=".8" d="M261 347l82-10m-89 14 82-10m-89 15 81-11m-79 16 72-12m-24-7-29 15m54-19-23 15"/>
+  <path fill="none" stroke="#725c50" stroke-width=".8" stroke-linecap="round" d="M265 348l13-2m-22 7 18-3m7-4 11-2m-19 8 15-3m7-5 16-3m-22 9 11-2m13-4 13-3"/>
+  <path fill="#9b554b" d="M324 349l13-2 2 3-12 2z"/>
+  <path fill="none" stroke="#a1835d" d="M254 345l35-15 34 3m-73 19 29-4m-13 10 17-3m-28-3 11 6m22-8 10 7m14-14 9 6"/>
+  <path fill="#d2b98a" stroke="#6e5746" d="M350 337l18-1-12 7-13 2z"/>
  <path fill="#b28d5c" stroke="#463c36" stroke-width="2" d="M170 383q23-11 48-5 19 7 1 15-28 12-52 3-12-5 3-13z"/>
  <path fill="#80a4a0" stroke="#dec891" stroke-width="2" d="M178 382q26-10 42 1 5 7-21 11-25 4-28-3-2-4 7-9z"/>
  <path stroke="#e2deb2" stroke-width="2" fill="none" d="M180 386q9-6 25-6"/>
