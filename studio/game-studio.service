@@ -1,0 +1,20 @@
+[Unit]
+Description=Local AI game studio watcher
+
+[Service]
+WorkingDirectory=%h/Projects/game-studio-reconciled
+ExecStart=/usr/bin/node studio/draft-watch.mjs --watch
+# An exiting watcher does not mean Bubblewrap has finished tearing down.
+ExitType=cgroup
+Restart=on-failure
+RestartSec=30s
+RestartPreventExitStatus=1
+KillMode=control-group
+TimeoutStopSec=15s
+SuccessExitStatus=143
+UMask=0077
+StandardOutput=append:%h/Projects/game-studio-reconciled/.studio-state/watch-service.log
+StandardError=inherit
+
+[Install]
+WantedBy=default.target

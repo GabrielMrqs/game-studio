@@ -1,0 +1,7 @@
+# Offline isolation test: inbox shares Cezar's private loopback namespace.
+# This cannot reach Linear, GitHub, or a remote model provider.
+services:
+  cezar:
+    network_mode: none
+  inbox:
+    network_mode: "service:cezar"

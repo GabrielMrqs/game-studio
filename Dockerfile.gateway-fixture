@@ -1,0 +1,10 @@
+FROM node:24-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
+RUN npm install -g @opencode/cli@2.2.7 \
+    && mkdir -p /socket /quota && chown node:node /socket /quota
+WORKDIR /fixture
+COPY studio/model-gateway.mjs /fixture/studio/model-gateway.mjs
+COPY studio/fixtures/gateway-server.mjs studio/fixtures/model-upstream.mjs /fixture/studio/fixtures/
+COPY studio/fixtures/worker.sh /fixture/worker.sh
+COPY studio/fixtures/opencode-fixture.json /fixture/opencode.json
+USER node
+ENV HOME=/tmp FIXTURE_MODEL_KEY=fixture-client-placeholder

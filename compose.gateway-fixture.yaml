@@ -1,0 +1,93 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway-fixture
+    command: ["node", "/fixture/studio/fixtures/gateway-server.mjs"]
+    secrets: [fixture_key]
+    networks: [worker_internal, upstream_internal]
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=64m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+  fixture-upstream:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway-fixture
+    command: ["node", "/fixture/studio/fixtures/model-upstream.mjs"]
+    secrets: [fixture_key]
+    networks: [upstream_internal]
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=64m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway-fixture
+    command: ["sh", "/fixture/worker.sh"]
+    networks: [worker_internal]
+    depends_on: [gateway, fixture-upstream]
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=512m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 128
+    mem_limit: 1g
+  cezar:
+    build:
+      context: .
+      dockerfile: Dockerfile.cezar-fixture
+    networks: [worker_internal]
+    depends_on: [gateway, fixture-upstream]
+    environment:
+      CEZ_TERMINAL: "0"
+      CEZ_DISPATCH: "0"
+      CEZ_MANAGERS: "0"
+      CEZ_AUTOMATIONS: "0"
+      CEZ_RELAY: "0"
+    volumes:
+      - fixture_project:/project
+      - fixture_handoff:/handoff
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=512m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 256
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:14321/api/v1/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 15s
+  tracker-ingest:
+    build:
+      context: .
+      dockerfile: Dockerfile.cezar-fixture
+    command: ["node", "studio/fixtures/tracker-ingest.mjs"]
+    networks: [upstream_internal]
+    volumes:
+      - fixture_project:/project
+      - fixture_handoff:/handoff
+    read_only: true
+    tmpfs: ["/tmp:rw,nosuid,size=256m"]
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    pids_limit: 64
+    mem_limit: 256m
+networks:
+  worker_internal:
+    internal: true
+  upstream_internal:
+    internal: true
+secrets:
+  fixture_key:
+    file: ./studio/fixtures/fixture-key.txt
+volumes:
+  fixture_project:
+  fixture_handoff:
