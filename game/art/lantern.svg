@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
+ <!-- Original illustration: the keeper's disused lantern workshop. -->
+ <defs>
+  <linearGradient id="wall" x2=".8" y2="1"><stop stop-color="#293941"/><stop offset=".55" stop-color="#587071"/><stop offset="1" stop-color="#8b8469"/></linearGradient>
+  <linearGradient id="tile" x2=".3" y2="1"><stop stop-color="#64716b"/><stop offset="1" stop-color="#292c38"/></linearGradient>
+  <linearGradient id="wood" x2=".35" y2="1"><stop stop-color="#ac8560"/><stop offset="1" stop-color="#53413e"/></linearGradient>
+  <linearGradient id="brass" x2=".88" y2=".46"><stop stop-color="#5c4e43"/><stop offset=".31" stop-color="#bf9f6a"/><stop offset=".51" stop-color="#e3c083"/><stop offset=".7" stop-color="#8a6850"/><stop offset="1" stop-color="#463e3d"/></linearGradient>
+  <linearGradient id="glass" x2=".8" y2="1"><stop stop-color="#456570"/><stop offset=".55" stop-color="#658786"/><stop offset="1" stop-color="#344952"/></linearGradient>
+  <radialGradient id="spill"><stop stop-color="#e4c791" stop-opacity=".49"/><stop offset="1" stop-color="#edd7a8" stop-opacity="0"/></radialGradient>
+ </defs>
+ <path fill="url(#tile)" d="M0 0h960v500H0Z"/>
+ <path fill="url(#wall)" d="M210 74l510-4 49 280-575 5Z"/>
+ <path fill="#3a4b50" d="M0 0l210 74-16 281L0 452Z"/>
+ <path fill="#344851" d="M720 70L960 0v454L769 350Z"/>
+ <path fill="#303a43" d="M0 0h960L720 70l-510 4Z"/>
+ <path fill="none" stroke="#26353e" stroke-width="7" d="M0 0l210 74 510-4L960 0M0 452l194-97 575-5 191 104"/>
+ <path fill="none" stroke="#9f9d7e" stroke-width="2" d="M0 434l195-94 570-6 195 106M9 10l201 71 510-4L952 10"/>
+ <path fill="none" stroke="#333644" stroke-width="2" d="M204 356L0 473m302-116L147 500m256-145-55 145m145-145 34 145m58-146 113 146m-20-146 180 146m-93-149 195 122M150 378l658-2M79 414l793 1M0 470l960 2"/>
+ <path fill="#78918b" opacity=".24" d="M482 349l224-1 181 124-298 3Z"/>
+ <path fill="none" stroke="#627672" stroke-width="2" d="M215 109l44 8 29-13 15 8m328 112 32 15 17-8 24 13m-376 47 17-9 24 4m370-164 25 8 29-13"/>
+ <!-- Hall door and worn kick plate. -->
+ <path fill="#222a32" stroke="#273039" stroke-width="4" d="M39 95l129 40-8 226-127 66z"/>
+ <path fill="url(#wood)" d="M45 104l115 36-8 221-8 3 7-214-97-29-4 294-10 6z"/>
+ <path fill="#33313a" d="M56 123l95 30-7 209-93 50Z"/>
+ <path fill="#696352" stroke="#403c3b" stroke-width="2" d="M56 128l74 36-4 194-75 51z"/>
+ <path fill="#353940" stroke="#aa906b" d="M64 147l57 25-2 70-56-9z"/>
+ <path fill="url(#glass)" d="M67 152l50 22-2 64-49-9z"/>
+ <path stroke="#bdac87" opacity=".6" d="M79 157v74m21-64-1 67"/>
+ <path fill="#af9676" stroke="#474546" d="M53 375l74-43-1 23-74 50z"/>
+ <path stroke="#dabb87" stroke-width="3" d="M104 280l14-5"/>
+ <path fill="#a58e69" opacity=".35" d="M130 356l16 5 76 45-170 69-36-19z"/>
+ <!-- Rainy clerestory and an old run of electrical conduit. -->
+ <path fill="#2c373e" stroke="#a39877" stroke-width="2" d="M570 107l128-6 16 107-139 3z"/>
+ <path fill="url(#glass)" d="M579 114l112-5 14 91-123 3z"/>
+ <path fill="#bac5a5" opacity=".39" d="M594 113h15l-27 76v-35zm35-1 27-2-26 91h-27zm40-2h9l-24 90h-11z"/>
+ <path fill="none" stroke="#394a4a" stroke-width="5" d="M629 111l6 91m-52-39 114-5"/>
+ <path fill="none" stroke="#b6b397" opacity=".55" d="M591 119v23m12 27v25m18-72v35m25 11v27m16-74v32m19 12 4 25"/>
+ <path fill="#897c61" stroke="#424842" stroke-width="2" d="M570 207l144-5 9 8-4 7-147 7-9-6z"/>
+ <path fill="none" stroke="#343d42" stroke-width="4" d="M226 83v90q0 10 9 10h73q18 0 18 15v88"/>
+ <path fill="#a48161" stroke="#46443f" stroke-width="2" d="M311 247l27 1v35l-27-1z"/>
+ <path stroke="#dbb784" stroke-width="3" d="M324 257v12"/>
+ <!-- Wall bench, rolled plans and cable rack. -->
+ <path fill="#242d36" opacity=".68" d="M185 399l103-50 437 31-31 91-444 2Z"/>
+ <path fill="url(#wood)" stroke="#33363b" stroke-width="3" d="M194 343l83-32 380-1 83 41-46 46-500 6z"/>
+ <path fill="#694d41" stroke="#363339" stroke-width="2" d="M194 379l506-12 40-16-4 20-41 17-501 16z"/>
+ <path fill="#453b39" stroke="#303138" stroke-width="2" d="M203 404l33-1-8 80-20 4zm449-15 33-1-4 79-22 5z"/>
+ <path fill="none" stroke="#c09b6d" opacity=".64" d="M200 381l496-12m-434-33 365-10m-329 23 107-4m153-1 101-3m-489-6 29-10"/>
+ <path fill="#7b6953" stroke="#44433f" stroke-width="2" d="M242 354l54-35 86 9-51 40z"/>
+ <path fill="#dbbf91" stroke="#695547" stroke-width="2" d="M243 350l65-32 59 10-46 32z"/>
+ <path fill="none" stroke="#82775c" d="M270 344l61-10m-52 13 42-7m-28 10 46-11"/>
+ <path fill="#c2ad87" stroke="#695748" stroke-width="2" d="M332 352l49-25q11 0 8 10l-48 29q-9 0-9-14z"/>
+ <path fill="none" stroke="#64584c" d="M342 358q-8-4-7 3m5 3q-7 1-7-7"/>
+ <path fill="#403b3b" stroke="#26333b" stroke-width="2" d="M776 123l35-5 9 139-29 4z"/>
+ <path fill="none" stroke="#9b8770" stroke-width="3" d="M794 142q-14 58 8 93 19 24 24-14 2-57-30-81m4 2q32 14 34 73 0 35-21 33-28-7-28-63l7-38m-1-15 15 2"/>
+ <path fill="#34313a" stroke="#2c333b" stroke-width="3" d="M743 350l136-42 81 49v143H781z"/>
+ <path fill="url(#wood)" stroke="#403838" stroke-width="2" d="M750 349l129-36 81 44-127 52z"/>
+ <path fill="#675145" d="M750 351l83 58-3 91h-48z"/>
+ <path fill="#584541" stroke="#a38360" stroke-width="2" d="M837 418l123-52v104l-126 25z"/>
+ <path fill="none" stroke="#bd9a70" stroke-width="3" d="M882 436l31-11m-30 36 29-7"/>
+ <!-- Ribbed brass lantern, empty lens mount and bevelled glass. -->
+ <ellipse cx="494" cy="323" rx="208" ry="142" fill="url(#spill)"/>
+ <path fill="#37313a" opacity=".7" d="M386 362q0-26 108-32 92-5 136 13-3 30-119 40-110 7-125-21z"/>
+ <path fill="none" stroke="#38363b" stroke-width="12" d="M462 140q-10-26 6-39 19-14 34-1 15 14 8 40"/>
+ <path fill="none" stroke="#b0956b" stroke-width="3" d="M462 137q-7-24 10-35 15-10 28-1 13 11 10 30"/>
+ <path fill="url(#brass)" stroke="#443b39" stroke-width="3" d="M440 152q9-10 12-27 33-11 67 0 1 14 14 24l42 37-11 21-135 3-16-23z"/>
+ <path fill="none" stroke="#ebca8a" stroke-width="2" d="M450 153q33-19 78-5m-108 35q71-19 147-1m-111-51q33-7 60 1"/>
+ <path fill="#57473e" d="M459 137l6-2-1 16-6 2zm12-3 5-1v15l-5 1zm13-2h5v14h-5zm13 0 5 1 1 13-5-1zm12 2 4 1 2 12-5-1z"/>
+ <path fill="url(#glass)" stroke="#3a3b3e" stroke-width="4" d="M423 191q69-20 144-1l-3 120q-67 27-138 4z"/>
+ <path fill="#adc4aa" opacity=".45" d="M436 194l24-5-27 105-2-50zm104-4 17 3-34 130-18-2z"/>
+ <path fill="none" stroke="#3a3c3e" stroke-width="7" d="M428 195l5 123m124-126-2 124"/>
+ <path fill="none" stroke="#c2ac7b" stroke-width="2" d="M430 199l5 112m124-115-2 117"/>
+ <path fill="url(#brass)" stroke="#3e3638" stroke-width="3" d="M418 311q65 17 149-6l5 18 18 16-1 12q-91 39-189 8l-2-15 19-17z"/>
+ <path fill="none" stroke="#e2bc81" stroke-width="2" d="M414 332q84 23 166-1m-174 15q82 28 178-4"/>
+ <ellipse cx="491" cy="257" rx="44" ry="48" fill="url(#brass)" stroke="#49413b" stroke-width="3"/>
+ <ellipse cx="491" cy="257" rx="34" ry="38" fill="#2b343c" stroke="#53554c" stroke-width="3"/>
+ <path fill="none" stroke="#9b9371" stroke-width="2" d="M467 241q6-14 23-17m20 11q13 18 4 37m-41 8q7 9 21 10"/>
+ <path fill="#6d614d" d="M487 240h8v7h-8zm18 17h7v6h-7zm-18 16h8v7h-8zm-18-16h7v6h-7z"/>
+ <path fill="#bd9c6c" d="M491 213a3 3 0 1 0 0 6 3 3 0 1 0 0-6m-40 44a3 3 0 1 0 6 0 3 3 0 1 0-6 0m76-1a3 3 0 1 0 6 0 3 3 0 1 0-6 0"/>
+</svg>

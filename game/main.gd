@@ -1,36 +1,42 @@
 extends Control
 
 class RoomCanvas extends Control:
-	var scene := "observatory"
-	var objects: Array = []
+	const ART := {
+		"observatory": preload("res://art/office.svg"),
+		"aurora": preload("res://art/aurora.svg"),
+		"lantern": preload("res://art/lantern.svg")
+	}
+	# Hotspot rectangles are authored in this shared illustration coordinate space.
+	const ART_SIZE := Vector2(960, 500)
+	var picture: TextureRect
+	var frame: Panel
+	var art_rect := Rect2()
+	var art_scale := 1.0
 
-	func _draw() -> void:
-		var s := size
-		draw_rect(Rect2(Vector2.ZERO, s), Color("4b4545") if scene == "aurora" else Color("354958"))
-		draw_rect(Rect2(0, s.y * 0.77, s.x, s.y * 0.23), Color("64564b"))
-		draw_line(Vector2(0, s.y * 0.77), Vector2(s.x, s.y * 0.77), Color("c5aa80"), 3.0)
-		for item in objects:
-			var r := Rect2(item[0].position * s, item[0].size * s)
-			draw_rect(r, Color("221f22"))
-			draw_rect(r.grow(-3), item[1])
-			var ink := Color("d9c69d")
-			match item[2]:
-				"KEEPER", "PEOPLE":
-					draw_circle(r.position + Vector2(r.size.x * .5, r.size.y * .38), r.size.x * .17, ink)
-					draw_rect(Rect2(r.position + r.size * Vector2(.28, .57), r.size * Vector2(.44, .32)), Color("454e50"))
-				"LANTERN →", "AURORA →", "← OFFICE":
-					draw_rect(r.grow(-10), Color("3d3633"), false, 2.0)
-					draw_circle(r.position + r.size * Vector2(.82, .56), 3.0, ink)
-				"OLD PHOTOS", "WALL / PLAN", "RECONSTRUCTION":
-					draw_rect(Rect2(r.position + r.size * Vector2(.14, .28), r.size * Vector2(.72, .55)), ink, false, 2.0)
-					draw_line(r.position + r.size * Vector2(.22, .65), r.position + r.size * Vector2(.75, .42), ink, 2.0)
-				"EVIDENCE":
-					for y in [.38, .62, .84]:
-						draw_line(r.position + r.size * Vector2(.08, y), r.position + r.size * Vector2(.92, y), ink, 3.0)
-				"DESK / LENS", "RECORDS", "DELIVERY RECORD", "RECTIFICATION":
-					draw_line(r.position + r.size * Vector2(.15, .48), r.position + r.size * Vector2(.8, .48), ink, 2.0)
-					draw_line(r.position + r.size * Vector2(.15, .67), r.position + r.size * Vector2(.7, .67), ink, 2.0)
-			draw_string(ThemeDB.fallback_font, r.position + Vector2(8, 20), item[2], HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 12, 14, Color("f1e4c8"))
+	func present(room_id: String, lit: bool) -> void:
+		picture.texture = ART[room_id]
+		var surface := picture.material as ShaderMaterial
+		surface.set_shader_parameter("lit", room_id == "lantern" and lit)
+		layout_art()
+
+	func layout_art() -> void:
+		var available := (size - Vector2(28, 24)).max(Vector2.ZERO)
+		art_scale = minf(available.x / ART_SIZE.x, available.y / ART_SIZE.y)
+		var fitted := ART_SIZE * art_scale
+		art_rect = Rect2((size - fitted) * .5, fitted)
+		picture.position = position + art_rect.position
+		picture.size = art_rect.size
+		frame.position = picture.position - Vector2(2, 2)
+		frame.size = picture.size + Vector2(4, 4)
+		for target in get_children():
+			var button := target as Button
+			var source: Rect2 = button.get_meta("art_region")
+			button.position = art_rect.position + source.position * art_scale
+			button.size = source.size * art_scale
+
+const HUD_HEIGHT := 178.0
+const INK := Color("161e26")
+const BRASS := Color("b08d63")
 
 var room := "observatory"
 var has_lens := false
@@ -85,7 +91,6 @@ var pause_overlay: Control
 var pause_menu: VBoxContainer
 var pause_feedback: Label
 var paused_panel: Control
-var theatre_backdrop: ColorRect
 var case_data := {
 	"number": "MR-014",
 	"description": "Case 01 — The Aurora Theatre Fire. Marina Azevedo reports a second emergency exit in the municipal registry that does not exist. Old photos show a door; inspection threatens closure.",
@@ -94,42 +99,76 @@ var case_data := {
 }
 
 
+func _surface(fill: Color, edge: Color, inset_x: float, inset_y: float) -> StyleBoxFlat:
+	var surface := StyleBoxFlat.new()
+	surface.bg_color = fill
+	surface.border_color = edge
+	surface.set_border_width_all(1)
+	surface.content_margin_left = inset_x
+	surface.content_margin_right = inset_x
+	surface.content_margin_top = inset_y
+	surface.content_margin_bottom = inset_y
+	return surface
+
+
+func _install_theme() -> void:
+	var dossier := Theme.new()
+	dossier.default_font_size = 15
+	dossier.set_color("font_color", "Label", Color("eee1cc"))
+	dossier.set_stylebox("panel", "PanelContainer", _surface(INK, Color("766651"), 16, 8))
+	dossier.set_stylebox("normal", "Button", _surface(Color("29363c"), Color("655e50"), 12, 3))
+	dossier.set_stylebox("hover", "Button", _surface(Color("3e5150"), BRASS, 12, 3))
+	dossier.set_stylebox("pressed", "Button", _surface(Color("58473a"), BRASS, 12, 3))
+	var focus := _surface(Color.TRANSPARENT, Color("e8c997"), 0, 0)
+	dossier.set_stylebox("focus", "Button", focus)
+	for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+		dossier.set_color(state, "Button", Color("eee1cc"))
+	theme = dossier
+
+
 func _ready() -> void:
-	var background := TextureRect.new()
-	background.texture = load("res://art/observatory.svg")
-	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	background.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	background.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(background)
-	theatre_backdrop = ColorRect.new()
-	theatre_backdrop.color = Color("51484a")
-	theatre_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	theatre_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(theatre_backdrop)
-	theatre_backdrop.hide()
+	_install_theme()
+	var matte := ColorRect.new()
+	matte.color = Color("10151c")
+	matte.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	matte.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(matte)
+	hotspots = RoomCanvas.new()
+	hotspots.frame = Panel.new()
+	hotspots.frame.add_theme_stylebox_override("panel", _surface(Color("5f5144"), BRASS, 0, 0))
+	hotspots.frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(hotspots.frame)
+	hotspots.picture = TextureRect.new()
+	hotspots.picture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	hotspots.picture.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var art_material := ShaderMaterial.new()
+	art_material.shader = preload("res://art/paper.gdshader")
+	hotspots.picture.material = art_material
+	add_child(hotspots.picture)
+	hotspots.clip_contents = true
+	hotspots.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	hotspots.offset_bottom = -HUD_HEIGHT
+	hotspots.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(hotspots)
 	var panel := PanelContainer.new()
 	gameplay_panel = panel
 	panel.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	panel.offset_top = -250
+	panel.offset_top = -HUD_HEIGHT
 	add_child(panel)
 	var layout := VBoxContainer.new()
+	layout.add_theme_constant_override("separation", 3)
 	panel.add_child(layout)
 	title = Label.new()
+	title.add_theme_font_size_override("font_size", 13)
+	title.add_theme_color_override("font_color", Color("cfb287"))
 	layout.add_child(title)
 	room_label = Label.new()
-	room_label.add_theme_font_size_override("font_size", 12)
+	room_label.add_theme_font_size_override("font_size", 20)
 	layout.add_child(room_label)
 	message = Label.new()
 	message.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	message.custom_minimum_size.y = 52
+	message.custom_minimum_size.y = 45
 	layout.add_child(message)
-	hotspots = RoomCanvas.new()
-	hotspots.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	hotspots.offset_bottom = -250
-	hotspots.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(hotspots)
-	move_child(hotspots, panel.get_index())
 	# Before: Save/Load duplicated pause and save selection in the HUD.
 	# Now: scene objects handle local actions; Case File and Pause are global.
 	# Pause saves or returns to the menu; Continue selects a save there.
@@ -142,14 +181,18 @@ func _ready() -> void:
 	_button(tools, "Case File", _open_case)
 	_button(tools, "Pause", _pause_game)
 	_show_room("The observatory is quiet. Explore the room.")
+	hotspots.resized.connect(hotspots.layout_art)
 	document_panel = PanelContainer.new()
 	document_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	document_panel.custom_minimum_size = Vector2(500, 0)
+	document_panel.offset_left = -320
+	document_panel.offset_right = 320
+	document_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
 	add_child(document_panel)
 	var document := VBoxContainer.new()
 	document_panel.add_child(document)
 	var record := Label.new()
-	record.add_theme_font_size_override("font_size", 20)
+	record.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	record.add_theme_font_size_override("font_size", 18)
 	record.text = "OBSERVATORY DELIVERY RECORD\n\nItem: Lamp oil, 2 tins\nRecipient: Observatory keeper\nDelivery address: 14 Harbour Road\nBilling address: 41 Harbour Road\n\nFiled by: M. Ellis"
 	document.add_child(record)
 	_button(document, "Close", _close_document)
@@ -302,9 +345,11 @@ func _show_menu() -> void:
 	case_panel.hide()
 	board_panel.hide()
 	gameplay_panel.hide()
+	hotspots.present("observatory", false)
 	_clear(menu)
 	var heading := Label.new()
-	heading.text = "The Quiet Observatory"
+	heading.text = "O Cartório dos Esquecidos"
+	heading.add_theme_font_size_override("font_size", 26)
 	menu.add_child(heading)
 	_button(menu, "New Game", _new_game)
 	_button(menu, "Continue", _show_saves)
@@ -386,16 +431,19 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 		button.tooltip_text = text
 		var invisible := StyleBoxEmpty.new()
 		var highlight := StyleBoxFlat.new()
-		highlight.bg_color = Color(1, 1, 1, 0.16)
+		highlight.bg_color = Color(1, 0.88, 0.69, 0.06)
 		highlight.border_color = Color("e8c997")
 		highlight.set_border_width_all(2)
+		var focused := highlight.duplicate() as StyleBoxFlat
+		focused.bg_color = Color.TRANSPARENT
 		button.add_theme_stylebox_override("normal", invisible)
 		button.add_theme_stylebox_override("hover", highlight)
 		button.add_theme_stylebox_override("pressed", highlight)
-		button.add_theme_stylebox_override("focus", highlight)
+		button.add_theme_stylebox_override("hover_pressed", highlight)
+		button.add_theme_stylebox_override("focus", focused)
 		button.add_theme_font_size_override("font_size", 1)
-		for state in ["normal", "hover", "pressed", "focus"]:
-			button.add_theme_color_override("font_" + state + "_color", Color.TRANSPARENT)
+		for state in ["font_color", "font_hover_color", "font_pressed_color", "font_focus_color", "font_hover_pressed_color"]:
+			button.add_theme_color_override(state, Color.TRANSPARENT)
 		button.mouse_entered.connect(func(): room_label.text = _room_name() + " — " + text)
 		button.mouse_exited.connect(func(): room_label.text = _room_name())
 		button.focus_entered.connect(func(): room_label.text = _room_name() + " — " + text)
@@ -403,18 +451,9 @@ func _button(parent: Node, text: String, action: Callable) -> Button:
 	return button
 
 
-func _scene_object(text: String, action: Callable, region: Rect2, color: Color, caption: String) -> void:
-	hotspots.objects.append([region, color, caption])
+func _scene_object(text: String, action: Callable, region: Rect2) -> void:
 	var button := _button(hotspots, text, action)
-	button.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	button.anchor_left = region.position.x
-	button.anchor_top = region.position.y
-	button.anchor_right = region.end.x
-	button.anchor_bottom = region.end.y
-	button.offset_left = 0
-	button.offset_top = 0
-	button.offset_right = 0
-	button.offset_bottom = 0
+	button.set_meta("art_region", region)
 
 
 func _sync_hotspots() -> void:
@@ -435,33 +474,30 @@ func _room_name() -> String:
 func _show_room(text: String) -> void:
 	_clear(hotspots)
 	_clear(choices)
-	hotspots.objects.clear()
-	hotspots.scene = room
-	theatre_backdrop.visible = room == "aurora"
-	title.text = "The Quiet Observatory — " + _room_name()
+	title.text = "CARTÓRIO DOS ESQUECIDOS   /   MR–014"
 	room_label.text = _room_name()
 	message.text = text
 	inventory.text = "Inventory: lens" + (" (selected)" if selected_lens else "") if has_lens else "Inventory: empty"
 	if room == "observatory":
-		_scene_object("Examine desk", _desk, Rect2(.08, .64, .27, .28), Color("795438"), "DESK / LENS")
-		_scene_object("Inspect delivery record", _open_document, Rect2(.12, .48, .18, .13), Color("b6a780"), "DELIVERY RECORD")
-		_scene_object("Talk to keeper", _keeper, Rect2(.42, .30, .13, .45), Color("777e77"), "KEEPER")
-		_scene_object("Lantern room →", func(): _transition("lantern"), Rect2(.63, .18, .13, .58), Color("604b3b"), "LANTERN →")
-		_scene_object("Teatro Aurora →", func(): _transition("aurora"), Rect2(.81, .18, .14, .58), Color("604b3b"), "AURORA →")
+		_scene_object("Examine desk", _desk, Rect2(60, 367, 335, 104))
+		_scene_object("Inspect delivery record", _open_document, Rect2(220, 320, 169, 47))
+		_scene_object("Talk to keeper", _keeper, Rect2(422, 119, 160, 219))
+		_scene_object("Lantern room →", func(): _transition("lantern"), Rect2(596, 115, 150, 220))
+		_scene_object("Teatro Aurora →", func(): _transition("aurora"), Rect2(775, 44, 146, 356))
 	elif room == "lantern":
-		_scene_object("Examine lantern", _lantern, Rect2(.38, .18, .24, .55), Color("a18b58"), "LANTERN")
-		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(.05, .18, .16, .58), Color("604b3b"), "← OFFICE")
+		_scene_object("Examine lantern", _lantern, Rect2(397, 89, 196, 281))
+		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(35, 94, 132, 328))
 	else:
-		_scene_object("Wall and plan", func(): _aurora_evidence(0), Rect2(.23, .12, .19, .37), Color("8b7c6b"), "WALL / PLAN")
-		_scene_object("Old door photos", func(): _aurora_evidence(1), Rect2(.44, .12, .13, .22), Color("ae9a7a"), "OLD PHOTOS")
-		_scene_object("Building records", func(): _aurora_evidence(2), Rect2(.60, .55, .16, .18), Color("a79575"), "RECORDS")
-		_scene_object("Interviews", _interviews, Rect2(.79, .33, .14, .43), Color("777e77"), "PEOPLE")
-		_scene_object("Evidence shelf", _evidence_shelf, Rect2(.06, .37, .15, .39), Color("795d49"), "EVIDENCE")
-		_scene_object("Reconstruction board", _open_board, Rect2(.60, .10, .21, .33), Color("8a755a"), "RECONSTRUCTION")
+		_scene_object("Wall and plan", func(): _aurora_evidence(0), Rect2(398, 130, 115, 185))
+		_scene_object("Old door photos", func(): _aurora_evidence(1), Rect2(514, 133, 76, 88))
+		_scene_object("Building records", func(): _aurora_evidence(2), Rect2(613, 310, 164, 63))
+		_scene_object("Interviews", _interviews, Rect2(815, 136, 122, 297))
+		_scene_object("Evidence shelf", _evidence_shelf, Rect2(133, 295, 182, 137))
+		_scene_object("Reconstruction board", _open_board, Rect2(640, 88, 167, 158))
 		if reconstruction_solved == [true, true] and rectification == "":
-			_scene_object("Cartório rectification", _rectification_choice, Rect2(.33, .64, .22, .18), Color("a79575"), "RECTIFICATION")
-		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(.01, .04, .12, .24), Color("604b3b"), "← OFFICE")
-	hotspots.queue_redraw()
+			_scene_object("Cartório rectification", _rectification_choice, Rect2(450, 351, 139, 50))
+		_scene_object("← Observatory", func(): _transition("observatory"), Rect2(10, 89, 94, 317))
+	hotspots.present(room, lit)
 
 
 func _open_board() -> void:
@@ -547,7 +583,6 @@ func _interviews() -> void:
 func _interview(person: int) -> void:
 	_clear(choices)
 	var account: Array = INTERVIEWS[person]
-	# The name and description act as a simple character placeholder.
 	message.text = "[%s — %s]\nWhat would you like to ask?" % [account[0], account[1]]
 	_button(choices, account[2], _statement.bind(person * 2))
 	_button(choices, account[4], _statement.bind(person * 2 + 1))

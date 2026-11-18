@@ -37,6 +37,23 @@ func check_panel_layout(panel: Control, button: Control, description: String) ->
 	check(panel_rect.get_center().distance_to(viewport_rect.get_center()) < 2.0, description + " is centered")
 
 
+func check_art_layout(asset: String, anchors: Dictionary) -> void:
+	var canvas: Control = game.hotspots
+	var picture: TextureRect = game.hotspots.picture
+	var bounds := picture.get_global_rect()
+	check(picture.texture.resource_path == "res://art/" + asset + ".svg", asset + " has its own illustration")
+	check(bounds.size.y > 0 and absf(bounds.size.x - bounds.size.y * 1.92) < 1.0, asset + " illustration retains its aspect ratio")
+	check(canvas.get_global_rect().encloses(bounds) and bounds.get_center().distance_to(canvas.get_global_rect().get_center()) < 1.0, asset + " illustration is centered and uncropped")
+	for caption in anchors:
+		var matched := false
+		var art_point: Vector2 = anchors[caption]
+		for button in canvas.get_children():
+			if button.text == caption:
+				matched = button.get_global_rect().has_point(bounds.position + art_point * (bounds.size / Vector2(960, 500)))
+				break
+		check(matched, asset + " hotspot aligns with painted object: " + caption)
+
+
 func run_test() -> void:
 	game = load("res://main.tscn").instantiate()
 	root.add_child(game)
@@ -132,18 +149,23 @@ func run_test() -> void:
 	await process_frame
 	var scene_size: Vector2 = game.hotspots.size
 	var scene_desk: Button = game.hotspots.get_child(0)
+	var office_anchors := {"Examine desk": Vector2(200, 385), "Inspect delivery record": Vector2(296, 349), "Teatro Aurora →": Vector2(832, 190)}
+	check_art_layout("office", office_anchors)
 	check(game.hotspots.get_parent() == game and scene_desk.get_rect().has_point(scene_size * Vector2(.2, .75)), "desk target lies over the illustrated desk")
 	game.hotspots.size = scene_size * Vector2(.8, 1.2)
 	await process_frame
+	check_art_layout("office", office_anchors)
 	check(scene_desk.get_rect().has_point(game.hotspots.size * Vector2(.2, .75)) and not scene_desk.get_rect().has_point(game.hotspots.size * Vector2(.5, .1)), "scene targets scale with canvas and leave empty areas clear")
 	game.hotspots.size = scene_size
 	press(game.hotspots, "Teatro Aurora →")
 	check(game.room == "aurora" and game.hotspots.get_child(0).text == "Wall and plan", "scene doorway replaces office targets with Aurora targets")
+	check_art_layout("aurora", {"Wall and plan": Vector2(448, 176), "Old door photos": Vector2(550, 158), "Building records": Vector2(681, 333), "Evidence shelf": Vector2(205, 317), "← Observatory": Vector2(53, 271)})
 	press(game.hotspots, "Old door photos")
 	check(game.aurora_clues[1] and game.document_panel.visible, "scene photo opens and records its clue")
 	press(game.document_panel.get_child(0), "Close")
 	press(game.hotspots, "← Observatory")
 	check(game.room == "observatory" and game.aurora_clues[1], "scene exit preserves investigation progress")
+	check_art_layout("office", office_anchors)
 	game.aurora_clues = [false, false, false]
 	game._show_room("The observatory is quiet. Explore the room.")
 	check(game.room == "observatory", "starting room")
@@ -167,6 +189,7 @@ func run_test() -> void:
 	check("desk" in game.message.text, "second dialogue branch")
 	press(game.hotspots, "Lantern room →")
 	check(game.room_label.text == "Lantern room", "room label updates on entry")
+	check_art_layout("lantern", {"Examine lantern": Vector2(491, 257), "← Observatory": Vector2(105, 281)})
 	var lantern: Button = game.hotspots.get_child(0)
 	check(lantern.mouse_default_cursor_shape == Control.CURSOR_POINTING_HAND, "new room hotspot uses pointing cursor")
 	lantern.mouse_entered.emit()
@@ -194,7 +217,10 @@ func run_test() -> void:
 	game.inventory.pressed.emit()
 	press(game.hotspots, "Examine lantern")
 	check(game.lit and not game.has_lens, "use lens to light lantern")
+	var lantern_surface: ShaderMaterial = game.hotspots.picture.material
+	check(lantern_surface.get_shader_parameter("lit") == true, "fitting the lens lights the illustration")
 	press(game.hotspots, "← Observatory")
+	check(lantern_surface.get_shader_parameter("lit") == false, "lantern glow does not carry into the office")
 	press(game.hotspots, "Talk to keeper")
 	check(game.message.text == "Keeper: Thank you for lighting the lantern!", "keeper thanks player after lighting lantern")
 	check(game.choices.get_child_count() == 0, "completed keeper dialogue has no choices")
