@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "snapshots": false,
+  "formatter": false,
+  "lsp": false,
+  "permissions": [
+    { "action": "*", "resource": "*", "effect": "deny" },
+    { "action": "read", "resource": "*", "effect": "allow" },
+    { "action": "glob", "resource": "*", "effect": "allow" },
+    { "action": "grep", "resource": "*", "effect": "allow" },
+    { "action": "edit", "resource": "*game/main.gd", "effect": "allow" },
+    { "action": "edit", "resource": "*game/tests/smoke.gd", "effect": "allow" },
+    { "action": "edit", "resource": "game/CASE_01_AURORA.md", "effect": "allow" },
+    { "action": "edit", "resource": "/work/game/CASE_01_AURORA.md", "effect": "allow" }
+  ],
+  "agents": {
+    "build": {
+      "permissions": [{ "action": "question", "resource": "*", "effect": "deny" }]
+    }
+  }
+}

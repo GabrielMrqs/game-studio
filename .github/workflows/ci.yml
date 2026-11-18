@@ -1,0 +1,66 @@
+name: checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+permissions:
+  contents: read
+jobs:
+  test:
+    # Ubuntu 26.04's bwrap AppArmor profile can deny nested namespace creation.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Prepare sandbox fixtures
+        run: |
+          # The hosted VM's regional Ubuntu mirror stalled the previous run.
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sudo sed -Ei 's|https?://[^ /]+\.ec2\.archive\.ubuntu\.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          fi
+          apt_opts=(-o Acquire::Retries=3 -o Acquire::http::Timeout=20)
+          sudo apt-get "${apt_opts[@]}" update
+          sudo apt-get "${apt_opts[@]}" install -y --no-install-recommends xvfb xauth imagemagick bubblewrap libgl1-mesa-dri
+          node_bin="$(readlink -f "$(command -v node)")"
+          if [ "$node_bin" != /usr/bin/node ]; then
+            sudo install -m 0755 "$node_bin" /usr/bin/node
+          fi
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          fi
+          uname -r
+          bwrap --version
+          if ! bwrap --unshare-all --die-with-parent --new-session \
+              --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind-try /lib64 /lib64 --proc /proc --tmpfs /tmp \
+              /usr/bin/bwrap --unshare-all --unshare-user --disable-userns --die-with-parent --new-session \
+              --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind-try /lib64 /lib64 --proc /proc /usr/bin/true; then
+            sudo journalctl -k --no-pager -n 500 | grep -E 'apparmor="DENIED".*(bwrap|userns)' | tail -20 || true
+            exit 1
+          fi
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Download Godot 4.3
+        run: |
+          curl -fsSL --retry 3 --retry-all-errors --max-time 90 -o "$RUNNER_TEMP/godot.zip" https://github.com/godotengine/godot/releases/download/4.3-stable/Godot_v4.3-stable_linux.x86_64.zip
+          echo "fd52bb4ba8acc30ca5accd1c566d470ad7282f891ccc0995dfafabcf92bcf76280ce182bf9d80ebd885f3ed2165d01e1fc3f2928436b15498dfbd98656c2a45a  $RUNNER_TEMP/godot.zip" | sha512sum -c -
+          unzip -q "$RUNNER_TEMP/godot.zip" -d "$RUNNER_TEMP/godot"
+      - run: 'STUDIO_TEST_GRAPHICS=1 GODOT_BIN="$RUNNER_TEMP/godot/Godot_v4.3-stable_linux.x86_64" node --test studio/preview.test.mjs'
+      - name: Godot QA on the exact commit
+        env:
+          GODOT_BIN: ${{ runner.temp }}/godot/Godot_v4.3-stable_linux.x86_64
+        run: |
+          mkdir -m 700 "$RUNNER_TEMP/godot-qa"
+          node --input-type=module -e 'import {qaCommit} from "./studio/once.mjs"; await qaCommit({godot:process.env.GODOT_BIN}, "HEAD", process.argv[1]);' "$RUNNER_TEMP/godot-qa"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Godot QA
+          path: |
+            ${{ runner.temp }}/godot-qa/*.log
+            ${{ runner.temp }}/godot-qa/screenshots/*.png

@@ -4,8 +4,15 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "studio:once": "node studio/once.mjs",
+    "studio:watch": "node studio/draft-watch.mjs --watch",
+    "studio:draft": "node studio/draft-watch.mjs",
     "cezar": "cezar",
-    "inbox": "node studio/inbox.mjs"
+    "inbox": "node studio/inbox.mjs",
+    "linear": "node studio/linear.mjs",
+    "watchdog": "node studio/watchdog.mjs",
+    "status": "node studio/status.mjs",
+    "inspect-recovery": "node studio/inspect-recovery.mjs"
   },
   "dependencies": {
     "@open-mercato/cezar": "0.20.0"

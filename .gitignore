@@ -5,3 +5,4 @@ ideas/*
 !ideas/.gitkeep
 .ai/cezar/runs/
 .ai/cezar/worktrees/
+game/.godot/
