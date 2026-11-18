@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500">
+ <!-- Original illustration: the municipal office after closing. -->
+ <defs>
+  <linearGradient id="wall" x2=".9" y2="1" gradientUnits="objectBoundingBox"><stop stop-color="#3d6261"/><stop offset=".48" stop-color="#90917a"/><stop offset="1" stop-color="#ae9671"/></linearGradient>
+  <linearGradient id="tile" x2="0" y2="1"><stop stop-color="#61584e"/><stop offset="1" stop-color="#242936"/></linearGradient>
+  <linearGradient id="glass" x2=".35" y2="1"><stop stop-color="#2c596a"/><stop offset=".7" stop-color="#78a6a1"/><stop offset="1" stop-color="#c9bc84"/></linearGradient>
+  <linearGradient id="wood" x2=".3" y2="1"><stop stop-color="#ae815a"/><stop offset=".55" stop-color="#87604a"/><stop offset="1" stop-color="#513b38"/></linearGradient>
+  <linearGradient id="face" x2=".85" y2=".6"><stop stop-color="#e3be91"/><stop offset="1" stop-color="#9e6b5d"/></linearGradient>
+  <linearGradient id="coat" x2="1" y2="1"><stop stop-color="#718580"/><stop offset=".58" stop-color="#425958"/><stop offset="1" stop-color="#28353b"/></linearGradient>
+  <linearGradient id="hall" x2="0" y2="1"><stop stop-color="#211f2b"/><stop offset=".65" stop-color="#503d3c"/><stop offset="1" stop-color="#957354"/></linearGradient>
+  <radialGradient id="spill"><stop stop-color="#f3db9b" stop-opacity=".43"/><stop offset="1" stop-color="#f3db9b" stop-opacity="0"/></radialGradient>
+  <linearGradient id="lacquer" x2=".12" y2="1"><stop stop-color="#526964"/><stop offset=".42" stop-color="#465854"/><stop offset="1" stop-color="#293b40"/></linearGradient>
+ </defs>
+ <!-- Ceiling, converging skirting and tile joints. -->
+ <path fill="#242d38" d="M0 0H960V500H0Z"/>
+ <path fill="url(#wall)" d="M130 49L755 49 792 342 134 340Z"/>
+ <path fill="#335051" d="M0 0L130 49 134 340 0 452Z"/>
+ <path fill="#555a52" d="M755 49L960 0V459L792 342Z"/>
+ <path fill="#53635d" d="M0 0H960L755 49H130Z"/>
+ <path fill="url(#tile)" d="M0 452L134 328 792 329 960 443V500H0Z"/>
+ <path fill="#bc996f" opacity=".24" d="M433 329H707L879 500H217Z"/>
+ <g fill="none" stroke-linecap="round">
+  <path stroke="#26373b" stroke-width="8" d="M0 447L134 326 792 327 960 446M0 0L130 49H755L960 0"/>
+  <path stroke="#c5a477" stroke-opacity=".68" stroke-width="2" d="M0 435L134 318 791 319 960 431M8 2L134 43 754 43 941 0"/>
+  <path stroke="#282c32" stroke-width="2" opacity=".68" d="M153 333L0 469M255 330L109 500M363 330L285 500M474 332L461 500M577 331L618 500M685 332L790 500M775 332L958 491M98 366H846M58 405H900M0 462H960"/>
+  <path stroke="#deb784" opacity=".25" d="M117 368H814M62 407H886M15 464H943M345 341L298 450M687 342L744 436"/>
+ </g>
+ <!-- Plaster history, conduit and overhead fluorescent fixture. -->
+ <path fill="#365457" opacity=".24" d="M136 55H752L756 78 655 74 574 85 494 77 397 90 284 80 139 97ZM134 275L222 282 288 270 438 291 599 275 756 272 790 318H134Z"/>
+ <path fill="none" stroke="#3c514d" opacity=".67" d="M139 100l25-6 9 5 22-4m215-37-17 10 8 8-12 12m361 153-15 13 5 13-9 14-18 4m-165 22 21-12 13 5 18-4"/>
+ <path fill="none" stroke="#393e3d" stroke-width="3" d="M402 47v45q0 7 7 7h173q8 0 8 8v36"/>
+ <path fill="none" stroke="#d2b48b" d="M403 48v43q0 7 7 7h173q8 0 8 8v37"/>
+ <path fill="#303a3b" d="M232 9l336 2 45 19-330 2z"/>
+ <path fill="#d2c6a2" d="M247 12l307 1 38 13-307 2z"/>
+ <path fill="#f5e4b4" d="M268 17l286 1 20 5-284 2z"/>
+ <!-- Tall rain-streaked municipal windows and skyline. -->
+ <path fill="#243839" stroke="#b2a37b" stroke-width="3" d="M159 110l226-2v150l-225 13z"/>
+ <path fill="url(#glass)" d="M168 117l209-3v135l-209 12z"/>
+ <path fill="#3f6367" d="M169 223l23-1v-22l16-5v29l13 1v-34l17-2v41l14-1 1-15 31-1v-22l22 3v33l12-2 1-54 16-12 14 10v51l12-2v-25l15 1v52l-208 12z"/>
+ <path fill="#a9b3a0" opacity=".39" d="M184 118h21l-35 112v-36zm54-1h36l-45 137-29 2zm68-1h9l-43 136-8 1zm57-1h14v26l-32 108-27 2z"/>
+ <path fill="none" stroke="#d4d4af" opacity=".42" d="M180 125v31m13 8v49m21-85v48m30 9v37m13-97v34m24 25v26m19-80v39m18 9v37m34-75v39m16 5v31"/>
+ <path fill="none" stroke="#393f3b" stroke-width="6" d="M238 115v144m70-145v141m-143-67 214-7"/>
+ <path fill="none" stroke="#b6a67d" stroke-width="2" d="M241 116v141m70-141v137m-144-62 209-7"/>
+ <path fill="#334043" stroke="#272b30" stroke-width="2" d="M154 266l232-14 11 10-5 8-239 17-13-5z"/>
+ <path fill="#9d9b7b" d="M154 267l232-13 9 8-245 18z"/>
+ <!-- Wall clock and the registry's brass nameplate. -->
+ <g transform="translate(525 113)">
+  <circle r="27" fill="#494943" opacity=".44" cy="5" cx="4"/>
+  <circle r="26" fill="#b49768" stroke="#303a3a" stroke-width="4"/>
+  <circle r="21" fill="#cfbf99" stroke="#756751" stroke-width="2"/>
+  <path stroke="#685c4d" d="M0-18v4m0 28v4M-18 0h4m28 0h4m-30-13 2 2m23-2-2 2m2 24-2-2m-23 2 2-2"/>
+  <path fill="none" stroke="#303a3c" stroke-width="2" d="M-5 9L0 0l9-13"/>
+ </g>
+ <path fill="#b19a6d" stroke="#554c40" stroke-width="2" d="M426 158h146l2 3v22l-146 2-3-3z"/>
+ <path fill="none" stroke="#4a4941" stroke-width="1.3" d="M452 165h-7v11h7m4 0 3-11 4 11m-5-4h4m5 4v-11h5v5h-5l6 6m3-11h9m-5 0v11m9-11h7v11h-7zm1-3 4-3m7 17v-11h6v5h-6l7 6m4-11v11m5-11h7v11h-7z"/>
+ <!-- Closed service door, glass exit, and their worn thresholds. -->
+ <path fill="#414740" stroke="#373936" stroke-width="2" d="M595 115l140 1 15 222-150-6z"/>
+ <path fill="#a6936c" d="M602 119h129l13 212h-9l-13-203-112 1 4 200h-9z"/>
+ <path fill="url(#wood)" stroke="#373533" stroke-width="2" d="M611 130l111-1 12 197-119-3z"/>
+ <path fill="#5b413b" stroke="#c19564" d="M621 213l96-1 4 92-97-2zm-1-70h91l4 56-93 2z"/>
+ <path fill="#554a3d" stroke="#c8a778" d="M638 158l55-1 1 23-55 1z"/>
+ <path fill="none" stroke="#eddbac" stroke-width="1.25" d="M649 173v-8m0 8h5m3 0 2-8 3 8m-4-3h3m4 3v-8l5 8v-8m3 0h6m-3 0v8m6-8h4m-4 0v8h5m-5-4h4"/>
+ <path fill="none" stroke="#b18c65" opacity=".53" d="M628 230l2 66m18-70 1 56m46-49 4 60m-20-49 1 19m-62 20 1 36"/>
+ <path fill="#302e2e" d="M704 239l14-1 1 23h-15z"/>
+ <path fill="#d1b37e" d="M705 244q13-7 15 0 1 6-7 5l-9-1z"/>
+ <path fill="#24282e" stroke="#3d403b" stroke-width="4" d="M774 89l137-45 14 367-132-73z"/>
+ <path fill="#b29b75" d="M778 94l132-43 12 351-9-5-12-331-115 34 15 241-7-4z"/>
+ <path fill="url(#hall)" d="M787 102l113-34 11 325-113-59z"/>
+ <path fill="#332f32" d="M804 111l48-14 8 239-44-18z"/>
+ <path fill="#a57c56" d="M808 110l39-11 4 148-31-1z"/>
+ <path fill="url(#glass)" d="M813 119l29-8 4 128h-22z"/>
+ <path fill="#293337" d="M828 114l6-2 7 134h-6z"/>
+ <path fill="#f3d395" opacity=".36" d="M852 320l58 49 38 82-141-78z"/>
+ <path fill="#253a3c" stroke="#bdaf82" stroke-width="2" d="M798 75l77-24v22l-77 22z"/>
+  <path fill="none" stroke="#e9ddad" stroke-width="1.5" d="M810 83l4-12 4 10m-6-4 4-1m6-7v8l1 2 4-1v-10m5 8v-10l5-2v4l-5 2 6 4m3-12 5-1v10l-5 1zm9 8v-10l5-2v4l-5 2 6 4m3-1 4-12 4 10m-6-3 4-2"/>
+  <!-- Low sorting cabinet; the dim floor lane stays open to both doors. -->
+  <g transform="translate(-40 57)">
+  <path fill="#282b30" opacity=".62" d="M592 362l118-7 50 16-17 18-148 7-23-16z"/>
+  <path fill="url(#lacquer)" stroke="#313b3a" stroke-width="2.5" d="M605 295l91-7 33 18-5 62-98 16-27-23z"/>
+  <path fill="#526660" stroke="#303a38" stroke-width="2" d="M604 296l91-7 32 16-100 11z"/>
+  <path fill="#2d4141" stroke="#343c3b" stroke-width="1.5" d="M602 303l25 13-1 66-25-22z"/>
+  <path fill="none" stroke="#ab9872" stroke-opacity=".56" d="M630 323l92-12-1 24-90 14zM631 354l90-15-1 24-89 14zm-22-51 18 10 93-9"/>
+  <path fill="none" stroke="#af9b78" stroke-width="2" stroke-linecap="round" d="M665 329l18-2m-18 33 17-3"/>
+  <path fill="#aa9e80" stroke="#554c43" d="M642 327l11-2v5l-11 2zm0 29 11-2v5l-11 2z"/>
+  <path fill="#5d5849" stroke="#383937" d="M636 294l23-11 33 8-23 12z"/>
+  <path fill="#c2ad86" stroke="#625947" d="M640 292l19-10 25 6-18 11z"/>
+  <path fill="none" stroke="#84735b" d="M648 291l16 4m-12-6 19 4m-14-6 13 3"/>
+  </g>
+ <!-- Foreground file stacks and shelving frame the view. -->
+ <path fill="#26373a" stroke="#232c30" stroke-width="3" d="M0 52L111 101 115 348 0 444Z"/>
+ <path fill="#786954" d="M0 73l104 38 3 14L0 92zm0 95 107 7 1 11L0 186zm0 91 109-29v12L0 278zm0 90 111-60 1 13L0 370z"/>
+ <path fill="#958262" d="M1 104l17 6 1 57-17-2zm20 8 13 4 1 52-13-1zm18 5 12 5 4 47-15-1zm30 12 19 7 2 36-19-2zM6 201l43-2 3 48-47 13zm52 0 15-3 4 43-16 4zm18-4 19-3 3 39-18 6zM2 291l31-11 1 44-31 16zm39-14 51-22 1 34-50 29z"/>
+  <path fill="#a8a78a" d="M24 132l8 2v13l-8-1zm49 10 11 3 1 8-12-2zM12 215l32-3v12l-32 5zm53-4 8-1 1 9-8 3zm-54 88 16-8v9l-16 9zm36-17 40-19v9l-40 20z"/>
+  <path fill="none" stroke="#d9be8d" opacity=".42" d="M3 107l12 5v48m10-47 7 3 1 45m11-42 6 3 3 36m23-25 9 3 2 23m-78 45 37-2m-38 40 36-10m-41 62 25-10m14-3 45-21m-44 51 46-26"/>
+  <path fill="none" stroke="#d1ac79" stroke-width="1.5" opacity=".56" d="M1 77l101 36m-101 59 103 6m-103 86 105-29m-105 120 107-61"/>
+ <path fill="#33474a" d="M100 106l12-5 5 248-12 11z"/>
+ <!-- Keeper: seated posture, glasses and rolled cardigan cuffs. -->
+ <path fill="#2a3032" stroke="#292e32" stroke-width="4" d="M422 339q-6-37 4-76 7-30 43-44l4-20q-15-23-7-49 6-25 30-27 28-6 42 16 12 19 0 48-6 15-14 22l3 13q21 5 34 18 18 17 22 58l-12 46z"/>
+ <path fill="url(#coat)" d="M470 222q-29 9-39 37-11 27-7 64l25 5 15-50-5 60 84 6-7-61 15 43 28-8q-3-56-20-72-12-13-35-21z"/>
+ <path fill="#333f42" d="M476 225l46-2-15 46-13 70-18-73z"/>
+ <path fill="#d9c09b" stroke="#3c4240" stroke-width="2" d="M478 214l25 13 21-13 9 17-23 22-7-17-10 16-24-22z"/>
+ <path fill="#875b52" d="M482 192l37 2 4 29-21 8-23-13z"/>
+ <path fill="url(#face)" stroke="#493a38" stroke-width="2" d="M474 155q11-19 35-15 17 0 26 17l-4 22q2 14-8 27-11 13-25 9-19-5-24-27l-6-2q-7-6-5-14 1-7 10-5z"/>
+ <path fill="#c1ba9d" d="M470 172q-14-8-5-31 8-21 32-23 26-5 39 13 9 12 2 30l-8-9q-15 3-25-9-8 11-28 16l-3 17z"/>
+ <path fill="none" stroke="#777d74" stroke-width="2" d="M472 155q4-20 29-24m-10 19q17-10 19-20m-42 17q7-21 36-24m8 14q12 5 22 13"/>
+ <path fill="none" stroke="#4c3e3f" stroke-width="1.8" d="M478 167q8-5 18-2m16-2 14 1m-23 7-3 16 8 1m-17 9q11-5 22-1m-17 7 11 1m-40-30 5 3"/>
+ <path fill="none" stroke="#283336" stroke-width="2" d="M474 171l7 1 17-2-1 12-14 1-3-11m18 1 12-1m0-2 19-1-2 11-15 1z"/>
+ <path fill="#363b39" d="M489 173h4v4h-4zm27-1h4v4h-4z"/>
+ <path fill="none" stroke="#819185" stroke-width="2" d="M451 260q7 11-4 35m100-38 10 34m-81-47 6 24-4 9 7 20m41-47-12 41m21 1 5 19"/>
+ <path fill="#688275" stroke="#334140" stroke-width="2" d="M430 300l25 6 18 24-36 13-16-18zm143 0-26 8-12 23 32 13 14-21z"/>
+ <path fill="url(#face)" stroke="#5c4540" stroke-width="2" d="M456 323q25-10 44 2l10 11-17 4-14-7-22 4zm94-5q-20-3-37 9l-10 10 12 5 17-11 20 3z"/>
+ <!-- Desk: foreshortened writing surface, brass pulls, paper and stamp. -->
+ <path fill="#211f28" opacity=".66" d="M0 452l403-94 174 25-44 117H0z"/>
+ <path fill="url(#wood)" stroke="#302b2f" stroke-width="3" d="M19 370l181-55 373 24-43 56L1 459z"/>
+ <path fill="#6c473a" stroke="#352e30" stroke-width="3" d="M0 451l531-62 0 19L0 484zm571-111v12l-40 56v-19z"/>
+ <path fill="#503b36" stroke="#332c2e" stroke-width="3" d="M0 480l453-62 1 82H0zm490-67 31-5-14 92h-27z"/>
+ <path fill="#76513f" stroke="#ac7954" stroke-width="2" d="M84 475l136-18v36L87 500zm149-20 200-28v29l-200 34zm1 41 199-33v37H234z"/>
+ <path fill="none" stroke="#c49a6b" stroke-width="3" d="M132 483l35-5m143-19 41-7m-39 44 40-7"/>
+ <path fill="#343e3e" stroke="#aa805e" stroke-width="2" d="M108 390l113-44 191 13-70 47-195 20z"/>
+ <path fill="#d2b282" stroke="#5c4840" stroke-width="2" d="M219 347l70-22 99 6-41 29-116 13z"/>
+ <path fill="#e7ce9e" stroke="#6e5746" d="M234 350l52-23 87 7-38 19-91 13z"/>
+ <path stroke="#897654" fill="none" d="M264 349l53-8m-43 12 50-8m-74 13 80-12m-41-7 27-5"/>
+ <path fill="#9b554b" d="M324 349l13-2 2 3-12 2z"/>
+ <path fill="#b28d5c" stroke="#463c36" stroke-width="2" d="M170 383q23-11 48-5 19 7 1 15-28 12-52 3-12-5 3-13z"/>
+ <path fill="#80a4a0" stroke="#dec891" stroke-width="2" d="M178 382q26-10 42 1 5 7-21 11-25 4-28-3-2-4 7-9z"/>
+ <path stroke="#e2deb2" stroke-width="2" fill="none" d="M180 386q9-6 25-6"/>
+ <path fill="#5a3836" stroke="#393133" stroke-width="2" d="M412 353q-8-3-5-8l14-4v-10q-7-6-2-13 6-6 14-1 5 4 0 14l1 9 11 3q5 7-7 9z"/>
+ <path fill="#c79a6c" d="M419 318q5-6 12 0l-2 3-11 1z"/>
+ <!-- Banker's lamp silhouette and pool of light. -->
+ <ellipse cx="121" cy="349" rx="196" ry="123" fill="url(#spill)"/>
+ <path fill="#302b2c" stroke="#a57f54" stroke-width="2" d="M52 381q1-8 21-15l6-2 27-5 17 7q8 13-18 19-35 9-53-4z"/>
+ <path fill="none" stroke="#3e3630" stroke-width="7" d="M88 371q-7-22 9-46l27-35"/>
+ <path fill="none" stroke="#c09a62" stroke-width="2" d="M86 368q-4-23 13-45l27-35"/>
+ <path fill="#2c504a" stroke="#263739" stroke-width="2" d="M58 309q3-35 29-48 35-15 76 2l34 22-24 26q-68-15-115-2z"/>
+ <path fill="#69917a" d="M69 294q11-30 37-33 24-4 49 5l25 15q-69-7-111 13z"/>
+ <path fill="#e1c57f" d="M60 309q54-20 113 0l-6 5q-57-14-104 1z"/>
+ <path fill="none" stroke="#c8a16d" d="M163 303v23"/>
+ <circle cx="163" cy="327" r="2" fill="#e0b97c"/>
+</svg>
